@@ -1,0 +1,65 @@
+<?php /** @var $block \Magento\Sales\Block\Order\Info */ ?>
+<?php $_order = $block->getOrder() ?>
+<div class="block block-order-details-view">
+    <div class="block-title">
+        <strong><?php /* @escapeNotVerified */ echo __('Order Information') ?></strong>
+    </div>
+    <div class="block-content">
+    <?php if (!$_order->getIsVirtual()): ?>
+        <div class="box box-order-shipping-address">
+            <strong class="box-title"><span><?php /* @escapeNotVerified */ echo __('Shipping Address') ?></span></strong>
+            <div class="box-content">
+                <address><?php /* @escapeNotVerified */ echo $block->getFormattedAddress($_order->getShippingAddress()); ?></address>
+            </div>
+        </div>
+
+        <div class="box box-order-shipping-method">
+            <strong class="box-title">
+                <span><?php /* @escapeNotVerified */ echo __('Shipping Method') ?></span>
+            </strong>
+            <div class="box-content">
+            <?php if ($_order->getShippingDescription()): ?>
+                <?php echo $block->escapeHtml($_order->getShippingDescription()) ?>
+            <?php else: ?>
+                <?php /* @escapeNotVerified */ echo __('No shipping information available'); ?>
+            <?php endif; ?>
+            </div>
+            <?php // Delivery Date Customization (Start)
+			$objMan = \Magento\Framework\App\ObjectManager::getInstance();
+			$helper = $objMan->get('Magecomp\Deliverydate\Helper\Data');
+			if($helper->DisplayDeliveryDateOn(1,$_order->getStoreId()) && $_order->getDeliverydate() != '0000-00-00 00:00:00') :
+
+                $formattedDate = $helper->getFomatedDate($_order->getDeliverydate());
+				$html = "<div id='delivery-date'><strong>Delivery Date:</strong><br />";
+                if($_order->getDeliverydate() != '1970-01-01 00:00:00') {
+                    $html .= "<span class='price'>" . $formattedDate . "</span>";
+                }
+                $html .= "</div>";
+				$html .= "<div id='delivery-comment'><strong>Delivery Comment:</strong><br />";
+				$html .= "<span class='price'>".$_order->getDeliverycomment()."</span>";
+				$html .= "</div>";
+				$html .= "<div style='clear:both;height:10px;'></div>";	
+				echo $html;
+			endif;
+         	// Delivery Date Customization (Start) ?>
+        </div>
+    <?php endif; ?>
+
+        <div class="box box-order-billing-address">
+            <strong class="box-title">
+                <span><?php /* @escapeNotVerified */ echo __('Billing Address') ?></span>
+            </strong>
+            <div class="box-content">
+                <address><?php /* @escapeNotVerified */ echo $block->getFormattedAddress($_order->getBillingAddress()); ?></address>
+            </div>
+        </div>
+        <div class="box box-order-billing-method">
+            <strong class="box-title">
+                <span><?php /* @escapeNotVerified */ echo __('Payment Method') ?></span>
+            </strong>
+            <div class="box-content">
+                <?php echo $block->getPaymentInfoHtml() ?>
+            </div>
+        </div>
+    </div>
+</div>

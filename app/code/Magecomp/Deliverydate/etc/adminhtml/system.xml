@@ -1,0 +1,106 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../Magento/Backend/etc/system_file.xsd">
+    <system>
+        <tab id="magecomp" translate="label" sortOrder="100">
+            <label><![CDATA[<img src="https://www.magecomp.com/media/images/magecomp--extension.png" alt="MAGECOMP" height="25" style="vertical-align:middle;"/>]]></label>
+        </tab>
+        <section id="deliverydate" translate="label" type="text" sortOrder="130" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Delivery Date</label>
+            <tab>magecomp</tab>
+            <resource>Magecomp_Deliverydate::deliverydate</resource>
+            <group id="general" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Configuration</label>
+                <field id="enable" translate="label" sortOrder="11" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Delivery Date</label>
+                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
+                </field>
+                <field id="deliverydatelabel" translate="label" sortOrder="12" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Delivery Date Label</label>
+                </field>
+                <field id="enabledcomment" translate="label" sortOrder="13" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Comment Box</label>
+                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
+                </field>
+                <field id="commentlabel" translate="label" sortOrder="14" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Comment Box Label</label>
+                    <depends><field id="enabledcomment">1</field></depends>
+                </field>
+                <field id="datetype" translate="label" sortOrder="15" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Frontend Picker Type</label>
+                    <source_model>Magecomp\Deliverydate\Model\Displaytype</source_model>
+                </field>
+                <field id="dateformatetype" translate="label" sortOrder="16" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Display Type</label>
+                    <source_model>Magecomp\Deliverydate\Model\Dateformatetype</source_model>
+                    <comment><![CDATA[Default time format is <b>hh:mm:ss</b>.]]></comment>
+                </field>
+                <field id="isrequiredcheckout" translate="label" sortOrder="17" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Set Timepicker Mandatory</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
+            <group id="setting" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Delivery Date and Time Settings</label>
+                <field id="disabled" translate="label" type="multiselect" sortOrder="21" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Exclude Delivery Days</label>
+                    <source_model>Magecomp\Deliverydate\Model\Config\Source\Disabled</source_model>
+                </field>
+                <field id="hourstart" translate="label" type="text" sortOrder="22" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Delivery Hours From</label>
+                </field>
+                <field id="hourend" translate="label" type="text" sortOrder="23" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Delivery Hours To</label>
+                    <comment><![CDATA[Supports 24 Hour Format.]]></comment>
+                </field>
+                <field id="enabledsameday" translate="label" sortOrder="24" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Same Day Delivery</label>
+                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
+                </field>
+                <field id="minimalinterval" translate="label" type="text" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Minimal Delivery Interval</label>
+                    <comment><![CDATA[Specify days to set minimum interval for delivery.]]></comment>
+                </field>
+                <field id="specialdates" translate="label" type="text" sortOrder="26" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Exclude Dynamic Holidays from Delivery</label>
+                    <comment><![CDATA[Enter comma separated dates in the format: YYYY-MM-DD. for Example - 2017-01-26]]></comment>
+                </field>
+                <field id="showdaterange" translate="label" type="select" sortOrder="27" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Date Range to Exclude from Delivery</label>
+                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
+                    <comment><![CDATA[Select date range to exclude from delivery days.]]></comment>
+                </field>
+                <field id="showdaterangefrom" translate="label" type="text" sortOrder="28" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>From Date</label>
+                    <frontend_model>Magecomp\Deliverydate\Model\Datepicker</frontend_model>
+                    <depends><field id="showdaterange">1</field></depends>
+                </field>
+                <field id="showdaterangeto" translate="label" type="text" sortOrder="29" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>To Date</label>
+                    <frontend_model>Magecomp\Deliverydate\Model\Datepicker</frontend_model>
+                    <depends><field id="showdaterange">1</field></depends>
+                </field>
+                <field id="cgroupfilter" translate="label" sortOrder="30" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Delivery Date for Customer Groups</label>
+                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
+                </field>
+                <field id="custgroup" translate="label" sortOrder="31" type="multiselect" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Customer Groups</label>
+                    <source_model>Magecomp\Deliverydate\Model\Groups</source_model>
+                    <depends><field id="cgroupfilter">1</field></depends>
+                </field>
+                <field id="displayon" translate="label" sortOrder="32" type="multiselect" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Display On</label>
+                    <source_model>Magecomp\Deliverydate\Model\Displayon</source_model>
+                </field>
+                <field id="printin" translate="label" sortOrder="33" type="multiselect" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Print In</label>
+                    <source_model>Magecomp\Deliverydate\Model\Printin</source_model>
+                </field>
+                <field id="sendin" translate="label" sortOrder="34" type="multiselect" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Send In</label>
+                    <source_model>Magecomp\Deliverydate\Model\Sendin</source_model>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

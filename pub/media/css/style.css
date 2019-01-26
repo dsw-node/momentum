@@ -1,0 +1,101 @@
+
+.product-item-name, .product.name a{
+	font-weight: normal;
+	font-size: 1.618em;
+	font-family: 'Teko', serif;
+	line-height: 1.5em;
+}
+
+.header-container .right-column .top-links ul {
+	font-family: 'Teko', serif !important;
+	font-size: 1.5em !important;
+}
+
+.product-item-name{
+		font-family: 'Teko', serif; !important
+}
+
+.breadcrumbs{
+	display: none;
+}
+
+.product-info-main .product-info-stock-sku{
+	display: none;
+}
+
+.product-social-links{
+	display: none;
+}
+
+.product-reviews-summary{
+	display: none;
+}
+
+.page-main > .page-title-wrapper .page-title {
+	display:none;
+}
+
+.columns .sidebar-additional {
+	display: none;
+}
+
+h1 {
+	font-size:4.236em;
+	text-transform: uppercase;
+	margin-bottom:-.5%;
+	text-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+}
+h2 {
+	font-size:2.618em;
+	text-transform: uppercase;
+	margin-bottom:-.2%;
+	text-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+}
+h3 {
+	font-size:1.618em;
+	text-transform: uppercase;
+	margin-bottom:-.1%;
+	text-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+}
+h4 {
+	font-size:2.618em;
+	text-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+}
+
+h5 {
+	font-size:1.618em;
+	text-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+}
+
+
+.product-info-main .price-box .price-wrapper .price, .product-options-bottom .price-box .price-wrapper .price {
+	font-size:1.618em;
+	font-family: 'Teko', serif;
+}
+
+
+.product-social-links .addto-links-icons .action .icon, .product-items .item .addto-links-icons .action .icon, .table-comparison .addto-links-icons .action .icon {
+	display:none;
+}
+
+.block-search {
+	display: none;
+}
+
+
+/* NAVIGATION - STICKY */
+.nav-regular.centered li.level0 {
+	float: left;
+}
+.header-container .left-column .nav-holders-wrapper, .header-container .left-column .navi {
+	padding-top:1%;
+}
+.navi > ul {
+	padding-bottom:1%;
+}
+.sticky-header .sticky-container {
+	border:5px solid #ffcd00;
+}
+
+/* NAVIGATION - CART Visual */
+

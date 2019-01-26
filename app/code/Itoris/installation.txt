@@ -1,0 +1,47 @@
+Installation Steps:
+
+1) Copy all folders and files located in directory "source" into the root of your Magento by FTP. Folder /app in the archive should go over folder /app of Magento2.
+
+2) Log on SSH and open your Magento2 root folder:
+cd /{magento2_base_path}
+
+3) Enable modules by running the following commands one by one:
+php bin/magento module:enable --clear-static-content Itoris_Core
+php bin/magento module:enable --clear-static-content Itoris_DynamicProductOptions
+
+4) Upgrade Magento2 setup by running the following command:
+php bin/magento setup:upgrade
+
+5) Log in to Magento2 backend and flush cache in System -> Cache Management -> Flush Magento Cache
+
+6) Register the extension using your license key following Stores -> Configuration -> ITORIS Extensions -> General Settings -> Installed ITORIS Extensions
+
+DONE
+
+
+
+
+
+How to update:
+
+1) Download the latest version archive at http://www.itoris.com/my-extensions.html and unpack the archive locally
+
+2) Log on SSH and open your Magento2 root folder:
+cd /{magento2_base_path}
+
+3) Disable modules by running the following commands one by one:
+php bin/magento module:disable --clear-static-content Itoris_DynamicProductOptions
+php bin/magento module:disable --clear-static-content Itoris_Core
+
+4) Copy all folders and files located in directory "source" into the root of your Magento by FTP. Folder /app in the archive should go over folder /app of Magento2.
+
+5) Enable modules by running the following commands one by one:
+php bin/magento module:enable --clear-static-content Itoris_Core
+php bin/magento module:enable --clear-static-content Itoris_DynamicProductOptions
+
+6) Upgrade Magento2 setup by running the following command:
+php bin/magento setup:upgrade
+
+7) Log in to Magento2 backend and flush cache in System -> Cache Management -> Flush Magento Cache
+
+DONE

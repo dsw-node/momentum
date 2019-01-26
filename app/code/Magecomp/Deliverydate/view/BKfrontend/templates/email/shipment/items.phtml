@@ -1,0 +1,34 @@
+<?php $_shipment = $block->getShipment() ?>
+<?php $_order    = $block->getOrder() ?>
+<?php 
+$objMan = \Magento\Framework\App\ObjectManager::getInstance();
+$helper = $objMan->get('Magecomp\Deliverydate\Helper\Data');
+if($helper->SendDeliveryDateIn(3,$_order->getStoreId()) && $_order->getDeliverydate() != '0000-00-00 00:00:00'): ?>
+<h3><?= __('Delivery Date and Comment'); ?></h3>
+<p><?= $helper->getFomatedDate($_order->getDeliverydate()); ?></p>
+<p><?= $_order->getDeliverycomment(); ?></p>
+<?php endif; ?>
+<?php if ($_shipment && $_order): ?>
+    <table class="email-items">
+        <thead>
+            <tr>
+                <th class="item-info">
+                    <?= /* @escapeNotVerified */  __('Items'); ?>
+                </th>
+                <th class="item-qty">
+                    <?= /* @escapeNotVerified */  __('Qty'); ?>
+                </th>
+            </tr>
+        </thead>
+        <?php foreach ($_shipment->getAllItems() as $_item): ?>
+            <?php
+                if ($_item->getOrderItem()->getParentItem()) {
+                    continue;
+                }
+            ?>
+            <tbody>
+                <?= $block->getItemHtml($_item) ?>
+            </tbody>
+        <?php endforeach; ?>
+    </table>
+<?php endif; ?>
