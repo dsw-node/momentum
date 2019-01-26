@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Webapi:etc/webapi.xsd">
-    <route url="/V1/deliverydate-base/carts/mine/update-item" method="POST">
+    <route url="/V1/deliverydate/carts/mine/update-item" method="POST">
         <service class="Magento360\Base\Api\UpdateItemDeliveryDateInterface" method="update"/>
         <resources>
             <resource ref="self"/>
@@ -10,7 +10,7 @@
             <parameter name="cartId" force="true">%cart_id%</parameter>
         </data>
     </route>
-    <route url="/V1/deliverydate-base/guest-carts/:cartId/update-item" method="POST">
+    <route url="/V1/deliverydate/guest-carts/:cartId/update-item" method="POST">
         <service class="Magento360\Base\Api\GuestUpdateItemDeliveryDateInterface" method="update"/>
         <resources>
             <resource ref="anonymous"/>

@@ -23,17 +23,17 @@ define([
     'underscore',
     'Magento_Customer/js/customer-data',
     'Bss_OneStepCheckout/js/action/update-item',
+    'Magento360_Base/js/action/update-deliverydate',
     'Magento_Checkout/js/model/quote'
-], function ($, Component, $t, ko, _, customerData, updateItemAction, quote) {
+], function ($, Component, $t, ko, _, customerData, updateItemAction,updateDeliverydateAction, quote) {
     'use strict';
     var quoteItemData = window.checkoutConfig.quoteItemData;
     return Component.extend({
         defaults: {
-            template: 'Bss_OneStepCheckout/summary/item/details'
+            template: 'Magento360_Base/summary/item/details'
         },
         quoteItemData: quoteItemData,
         titleQtyBox: ko.observable($t('Qty')),
-
         /**
          * @param {Object} item
          * @returns void
@@ -64,7 +64,24 @@ define([
                 }
             );
         },
-
+        updateDeliverydate: function (item) {
+            var customdatepickerid="item_date_picker_"+item.item_id;
+            var item_date_picker=$('input.input-text').filter('[customdatepickerid="'+customdatepickerid+'"]');
+            var selected_date=item_date_picker.val();
+            updateDeliverydateAction(item,selected_date).done(
+                function (response) {
+                    var totals = response.totals,
+                        data = JSON.parse(this.data),
+                        itemId = data.itemId,
+                        itemsOrigin = [],
+                        quoteItemData = window.checkoutConfig.quoteItemData;
+                    if (!response.status) {
+                    } else {
+                        customerData.reload('cart');
+                    }
+                }
+            );
+        },
         /**
          * @param {*} itemId
          * @returns {String}
@@ -98,7 +115,7 @@ define([
         },
         getDatePickerId: function (quoteItem) {
             var item = this.getItem(quoteItem.item_id);
-            return "item_date_picker_"+item.product_id;
+            return "item_date_picker_"+item.item_id;
         },
         getDateTitle: function () {
             return window.checkoutConfig.shipping.deliverydate.datelabel;

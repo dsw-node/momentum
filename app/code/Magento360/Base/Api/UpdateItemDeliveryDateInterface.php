@@ -6,10 +6,10 @@ interface UpdateItemDeliveryDateInterface
      * @param int $cartId
      * @param \Magento\Quote\Api\Data\EstimateAddressInterface $address
      * @param int $itemId
-     * @param date $date
+     * @param string $date
      * @return \Bss\OneStepCheckout\Api\Data\UpdateItemDetailsInterface
      * @throws \Magento\Framework\Exception\CouldNotSaveException
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
-    public function update($cartId, \Magento\Quote\Api\Data\EstimateAddressInterface $address, $itemId, $date);
+    public function update($cartId, \Magento\Quote\Api\Data\EstimateAddressInterface $address, $itemId, $deliverydate);
 }

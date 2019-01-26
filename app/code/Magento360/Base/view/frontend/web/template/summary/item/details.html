@@ -20,7 +20,7 @@
 <!-- ko foreach: getRegion('before_details') -->
 <!-- ko template: getTemplate() --><!-- /ko -->
 <!-- /ko -->
-<div class="product-item-details">
+<div class="product-item-details 333">
     <div class="product-item-inner">
         <div class="product-item-name-block">
             <strong class="product-item-name">
@@ -41,7 +41,7 @@
                 <label class="label"><span data-bind="text: getDateTitle()"></span></label>
                 <div class="control">
                     <!--<input class="input-text custom_deliverydate" type="text"  data-bind="datetimepicker: true,attr: {name: getDatePickerId($parent),id: getDatePickerId($parent)}"  readonly="true" style="width:91%;"/>-->
-                    <input class="input-text custom_deliverydate" type="text"  data-bind="datetimepicker: true , attr: {customdatepickerid: getDatePickerId($parent)}"  readonly="true" style="width:91%;"/>
+                    <input class="input-text custom_deliverydate" type="text"  data-bind="datetimepicker: true ,event: {change:function(){updateDeliverydate($parent);}}, attr: {customdatepickerid: getDatePickerId($parent)}"  readonly="true" style="width:91%;"/>
                     <button type="button" class="ui-datepicker-trigger v-middle" data-bind="
                         click: calenderclick($parent);"><span></span></button>
                 </div>
