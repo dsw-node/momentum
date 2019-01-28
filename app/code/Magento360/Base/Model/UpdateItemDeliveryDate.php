@@ -101,14 +101,10 @@ class UpdateItemDeliveryDate implements UpdateItemDeliveryDateInterface
                     );
                 }
             }
-            $quoteItem = $quote->getItemById($itemId);
-            var_dump("After Save...".$quoteItem->getDeliverydate());
             $this->cartRepository->save($quote);
         } catch (LocalizedException $e) {
             $message = $e->getMessage();
         } catch (\Exception $e) {
-            $message = $e->getMessage();
-            var_dump($message);exit;
             throw new CouldNotSaveException(__('We can\'t update the item right now.'));
         }
     }

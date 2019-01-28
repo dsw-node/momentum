@@ -117,6 +117,15 @@ define([
             var item = this.getItem(quoteItem.item_id);
             return "item_date_picker_"+item.item_id;
         },
+        getDatePickerValue: function (quoteItem) {
+            var item = this.getItem(quoteItem.item_id);
+            var deliverydate=item.deliverydate;
+            if (typeof(deliverydate) != 'undefined' && deliverydate != null){
+                var ret = deliverydate.split(" ");
+                var deliverydate = ret[0];
+                return deliverydate;
+            }
+        },
         getDateTitle: function () {
             return window.checkoutConfig.shipping.deliverydate.datelabel;
         },

@@ -6,4 +6,10 @@
                 type="Magento360\Base\Model\GuestUpdateItemDeliveryDate" />
     <!--<preference for="Magento360\Base\Api\Data\UpdateItemDetailsInterface"-->
                 <!--type="Magento360\Base\Model\UpdateItemDetails" />-->
+    <!--<type name="Magento\Quote\Model\Quote\Item\ToOrderItem">-->
+        <!--<plugin name="magento360_to_order_item" type="Magento360\Base\Plugin\Quote\ToOrderItem"/>-->
+    <!--</type>-->
+    <type name="Magento\Quote\Model\Quote\Item\ToOrderItem">
+        <plugin name="magentobase_to_order_item" type="Magento360\Base\Plugin\Quote\ToOrderItem"/>
+    </type>
 </config>
