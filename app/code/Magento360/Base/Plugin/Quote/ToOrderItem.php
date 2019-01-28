@@ -1,32 +1,30 @@
 <?php
-namespace Vendor\ModuleName\Plugin;
+namespace Magento360\Base\Plugin\Quote;
 use Magento\Quote\Model\Quote\Item\ToOrderItem as QuoteToOrderItem;
 class ToOrderItem
 {
-    /**
-     * aroundConvert
-     *
-     * @param QuoteToOrderItem $subject
-     * @param \Closure $proceed
-     * @param \Magento\Quote\Model\Quote\Item $item
-     * @param array $data
-     *
-     * @return \Magento\Sales\Model\Order\Item
-     */
+
+
     public function aroundConvert(
-        QuoteToOrderItem $subject,
+        \Magento\Quote\Model\Quote\Item\ToOrderItem $subject,
         \Closure $proceed,
-        $item,
-        $data = []
+        \Magento\Quote\Model\Quote\Item\AbstractItem $item,
+        $additional = []
     ) {
         try {
-            $orderItem = $proceed($item, $data);
+            $orderItem = $proceed($item, $additional);
             $orderItem->setDeliverydate($item->getDeliverydate());
             return $orderItem;
         } catch (LocalizedException $e) {
-            var_dump($e->getMessage());
+            $this->log($e->getMessage());
         } catch (\Exception $e) {
-            var_dump($e->getMessage());
+            $this->log($e->getMessage());
         }
+    }
+    public function log($info) {
+        $writer = new \Zend\Log\Writer\Stream(BP . '/var/log/exception.log');
+        $logger = new \Zend\Log\Logger();
+        $logger->addWriter($writer);
+        $logger->info($info);
     }
 }
