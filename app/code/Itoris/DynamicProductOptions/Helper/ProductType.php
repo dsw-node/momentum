@@ -93,7 +93,7 @@ class ProductType extends \Magento\Framework\App\Helper\AbstractHelper
                         }
                     }
                 }
-                $sections = $config->getSections();
+                $sections = json_decode($config->getConfiguration(), true); //$config->getSections();
                 foreach ($sections as $section) {
                     if (isset($section['visibility_condition'])) {
                         $condition = \Zend_Json::decode($section['visibility_condition']);
@@ -116,7 +116,7 @@ class ProductType extends \Magento\Framework\App\Helper\AbstractHelper
                         }
                     }
                 }
-                $currentCustomerGroup = (int)$this->_objectManager->create('Itoris\DynamicProductOptions\Helper\Data')->getCustomerGroupId();
+                $currentCustomerGroup = (int)$this->_objectManager->get('Itoris\DynamicProductOptions\Helper\Data')->getCustomerGroupId();
                 foreach ($optionsByInternalId as $_option) {
                     if (isset($requiredOptions[$_option->getOrigOptionId()])) {
                         $configuration = $_option->getConfiguration();
@@ -131,7 +131,7 @@ class ProductType extends \Magento\Framework\App\Helper\AbstractHelper
                                     $product->setData('skip_required_option' . $_option->getOrigOptionId(), 1);
                                 }
                             }
-                        } elseif ($configuration['visibility'] == 'hidden' || $configuration['visibility'] == 'disabled') {
+                        } elseif (isset($configuration['visibility']) && ($configuration['visibility'] == 'hidden' || $configuration['visibility'] == 'disabled')) {
                             $product->setData('skip_required_option' . $_option->getOrigOptionId(), 1);
                         } elseif (isset($configuration['customer_group']) && $configuration['customer_group'] != '' && intval($configuration['customer_group']) != $currentCustomerGroup) {
                             $product->setData('skip_required_option' . $_option->getOrigOptionId(), 1);
@@ -189,10 +189,11 @@ class ProductType extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function prepareOptionValue($option, $value) {
         $selectTypes = ['drop_down', 'multiple', 'radio', 'checkbox'];
+        $storeId = $option->getStoreId() ? $option->getStoreId() : $this->_storeManager->getStore()->getId();
         if (in_array($option->getType(), $selectTypes)) {
             $values = explode(',', $value);
             if (!empty($values)) {
-                $valuesCollection = $option->getOptionValuesByOptionId($values, $option->getStoreId())->addTitlesToResult($option->getStoreId())->load();
+                $valuesCollection = $option->getOptionValuesByOptionId($values, $storeId)->addTitlesToResult($storeId)->load();
                 foreach ($values as $key => $_value) {
                     $valueObj = $valuesCollection->getItemById($_value);
                     $values[$key] = $valueObj ? $valueObj->getTitle() : null;

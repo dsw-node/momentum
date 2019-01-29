@@ -47,6 +47,6 @@ class GridMassAction extends \Magento\Catalog\Block\Product\View\Options
     }
     
     protected function getDataHelper() {
-        return $this->_objectManager->create('Itoris\DynamicProductOptions\Helper\Data');
+        return $this->_objectManager->get('Itoris\DynamicProductOptions\Helper\Data');
     }
 }

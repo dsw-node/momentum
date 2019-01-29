@@ -46,7 +46,7 @@ class OrderComposeProductOptions implements ObserverInterface
         $this->_objectManager = $objectManager;
         $this->_request = $request;
         try {
-            $this->isEnabledFlag = $this->_objectManager->create('Itoris\DynamicProductOptions\Helper\Data')->getSettings(true)->getEnabled();
+            $this->isEnabledFlag = $this->_objectManager->get('Itoris\DynamicProductOptions\Helper\Data')->getSettings(true)->getEnabled();
         } catch (\Exception $e) {/** save store model */}
     }
 

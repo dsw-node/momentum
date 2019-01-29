@@ -197,6 +197,11 @@ class Options extends \Magento\Framework\Model\AbstractModel
                             $sections[$sectionOrder]['fields'] = $this->_sortByOrder($sectionOptions);
                         }
                     }
+                    if ($this->getDataHelper()->isFrontend() || $this->getRequest()->getControllerName() == 'order_create') {
+                        foreach(array_keys($sections) as $index) {
+                            if (!isset($resultOptions[$index])) unset($sections[$index]);
+                        }
+                    }
                 } else {
                     $defaultOptions = $this->_getDefaultOptions();
                     if (count($defaultOptions)) {
@@ -352,7 +357,7 @@ class Options extends \Magento\Framework\Model\AbstractModel
      * @return \Itoris\DynamicProductOptions\Helper\Data
      */
     protected function getDataHelper() {
-        return $this->_objectManager->create('Itoris\DynamicProductOptions\Helper\Data');
+        return $this->_objectManager->get('Itoris\DynamicProductOptions\Helper\Data');
     }
 
     /**
@@ -377,7 +382,7 @@ class Options extends \Magento\Framework\Model\AbstractModel
         if ($img_src) {
             $pos = strpos($img_src, 'itoris/files');
             if ($pos !== false) {
-                $img_src = $this->getStore()->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA, true).substr($img_src, $pos);
+                $img_src = $this->getStore()->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA).substr($img_src, $pos);
                 $img_src = str_replace(['http://', 'https://'], '//', $img_src);
             }
         }

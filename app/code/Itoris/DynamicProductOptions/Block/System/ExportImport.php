@@ -44,9 +44,9 @@ class ExportImport extends \Magento\Config\Block\System\Config\Form\Fieldset
                 window.dpoFileImport = function(btn){
                     var file = jQuery(\'#dynamic_product_options_import\');
                     if (!file.val()) {alert(\'Please select a file\'); return;}
-                    btn.disabled = true;
+                    btn.disabled = true;                    
                     jQuery("#dynamic_product_options_import").before("<i>Uploading... Please wait.</i>");
-                    jQuery(\'<form action="'.$this->getUrl('dynamicproductoptions/product/importAll').'" method="post" enctype="multipart/form-data">\').append(jQuery("#dynamic_product_options_import")).appendTo(document.body).submit();
+                    jQuery(\'<form action="'.$this->getUrl('dynamicproductoptions/product/importAll').'" method="post" enctype="multipart/form-data">\').append(\'<input type="hidden" name="form_key" value="\'+FORM_KEY+\'" />\').append(jQuery("#dynamic_product_options_import")).appendTo(document.body).submit();
                 }
                 window.dpoFileExport = function(){
                     document.location.href = \''.$this->getUrl('dynamicproductoptions/product/exportAll').'\';

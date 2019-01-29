@@ -58,7 +58,7 @@ class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\Ab
 
     public function addCustomerGroupFilter() {
         $dynamicOptionCustomerGroupTable = $this->getTable('itoris_dynamicproductoptions_option_customergroup');
-        $customerGroupId = (int)$this->_objectManager->create('Itoris\DynamicProductOptions\Helper\Data')->getCustomerGroupId();
+        $customerGroupId = (int)$this->_objectManager->get('Itoris\DynamicProductOptions\Helper\Data')->getCustomerGroupId();
         $this->getSelect()
             ->joinLeft(
                 ['dynamic_options_customergroups' => $dynamicOptionCustomerGroupTable],

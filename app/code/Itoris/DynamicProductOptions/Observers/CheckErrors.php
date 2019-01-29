@@ -46,7 +46,7 @@ class CheckErrors implements ObserverInterface
         if ($this->_objectManager->get('Magento\Backend\Model\Session')->getDynamicOptionsErrors()) {
             /** @var $auth \Magento\Backend\Model\Auth  */
             $auth = $this->_objectManager->get('Magento\Backend\Model\Auth');
-            $auth::throwException($this->_objectManager->create('Itoris\DynamicProductOptions\Helper\Data')->getOptionErrorsMessage());
+            $auth::throwException($this->_objectManager->get('Itoris\DynamicProductOptions\Helper\Data')->getOptionErrorsMessage());
         }
     }
 }

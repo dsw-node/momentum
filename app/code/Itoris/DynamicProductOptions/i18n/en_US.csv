@@ -6,10 +6,10 @@
 "In a Popup after clicking ""Configure""","In a Popup after clicking ""Configure"""
 "Please, enter the text shown in the image into the field below","Please, enter the text shown in the image into the field below"
 "Product doesn't have custom options","Product doesn't have custom options"
-"The size of image '%s' could not be detected","The size of image '%s' could not be detected"
+"The size of image '%1' could not be detected","The size of image '%1' could not be detected"
 "You can't remove section with fields on a store view. Move fields to another section before remove","You can't remove section with fields on a store view. Move fields to another section before remove"
 "example: png, jpg, jpeg, gif","example: png, jpg, jpeg, gif"
-%s products have been changed,%s products have been changed
+%1 products have been changed,%1 products have been changed
 -- Please Select --,-- Please Select --
 --No validation--,--No validation--
 --select default field--,--select default field--
@@ -45,7 +45,7 @@ Click Add to Cart to Configure,Click Add to Cart to Configure
 Columns,Columns
 Comment,Comment
 Configuration,Configuration
-Configure %s,Configure %s
+Configure %1,Configure %1
 Configure,Configure
 Copy Custom Options 1 to Many,Copy Custom Options 1 to Many
 Create New Template,Create New Template
@@ -60,6 +60,7 @@ Default Value,Default Value
 Default configuration will be used for the store view. Uncheck checkbox &quot;Use Default&quot; to create custom.,Default configuration will be used for the store view. Uncheck checkbox &quot;Use Default&quot; to create custom.
 Del,Del
 Delete,Delete
+Design Swatch,Design Swatch
 Disabled,Disabled
 Do you really want to copy configuration from selected element?,Do you really want to copy configuration from selected element?
 Do you really want to remove all fields?,Do you really want to remove all fields?
@@ -69,6 +70,7 @@ Do you really want to remove this section?,Do you really want to remove this sec
 Dropdown,Dropdown
 Dynamic Product Options,Dynamic Product Options
 Edit Template,Edit Template
+Edit Swatch HTML,Edit Swatch HTML
 Edit,Edit
 Email,Email
 Enter New Template Name,Enter New Template Name
@@ -173,9 +175,9 @@ Static Text,Static Text
 Swatch,Swatch
 Table-based with sections,Table-based with sections
 Table-based,Table-based
-Template %s has been deleted,Template %s has been deleted
-Template %s has been loaded,Template %s has been loaded
-Template %s has been updated,Template %s has been updated
+Template %1 has been deleted,Template %1 has been deleted
+Template %1 has been loaded,Template %1 has been loaded
+Template %1 has been updated,Template %1 has been updated
 Template Name,Template Name
 Template has been deleted,Template has been deleted
 Template has been saved,Template has been saved

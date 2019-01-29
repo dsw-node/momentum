@@ -46,7 +46,7 @@ class Form extends Data
     private function prepareValues($values, $withoutValues = []) {
         foreach ($values as $key => $value) {
             if (!in_array($value['value'], $withoutValues)) {
-                $values[$key]['label'] = __(sprintf($value['label']));
+                $values[$key]['label'] = __($value['label']);
             } else {
                 unset($values[$key]);
             }

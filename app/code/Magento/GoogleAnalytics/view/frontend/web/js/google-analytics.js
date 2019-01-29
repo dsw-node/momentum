@@ -43,7 +43,7 @@ define([
                 a.async = 1;
                 a.src = g;
                 m.parentNode.insertBefore(a, m)
-            })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
+            })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
 
             // Process page info
             ga('create', config.pageTrackingData.accountId, 'auto');
@@ -51,11 +51,13 @@ define([
             if (config.pageTrackingData.isAnonymizedIpActive) {
                 ga('set', 'anonymizeIp', true);
             }
+            ga('send', 'pageview' + config.pageTrackingData.optPageUrl);
 
             // Process orders data
-            if (config.ordersTrackingData.hasOwnProperty('currency')) {
+            if (config.ordersTrackingData) {
                 ga('require', 'ec', 'ec.js');
 
+                //Set currency code
                 ga('set', 'currencyCode', config.ordersTrackingData.currency);
 
                 // Collect product data for GA
@@ -73,9 +75,6 @@ define([
                 }
 
                 ga('send', 'pageview');
-            } else {
-                // Process Data if not orders
-                ga('send', 'pageview' + config.pageTrackingData.optPageUrl);
             }
         }
     }

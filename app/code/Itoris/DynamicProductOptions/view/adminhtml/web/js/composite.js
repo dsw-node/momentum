@@ -48,6 +48,8 @@ define([
             Event.observe(window, 'resize', this.correctPopupPosition.bind(this));
 			if (typeof this.config.options_qty.length != 'number') {this.updateAllPrices(); this.presetOptionsQty(); this.updateAllPrices();}
             this.updateAllPrices();
+            //running custom JS right after initialization
+            if (this.config.extra_js) eval(this.config.extra_js);
         },
         initForm : function() {
             if (this.config.is_grouped) {
@@ -876,7 +878,7 @@ define([
         prepareRadioOptions : function(field, option) {
             var allRadios = field.select('input');
             var optionsBlock = field.select('.options-list')[0];
-            var hasImages = false;
+            var hasImages = false, _obj = this;
             var carriageReturnElms = [];
             for (var i = 0; i < option.items.length; i++) {
                 for (var j = 0; j < allRadios.length; j++) {
@@ -888,8 +890,20 @@ define([
 							var checked = $$('input[name="'+allRadios[j].name+'"]:checked')[0];
 							if (!checked || !checked.value || allRadios[j].type == 'checkbox') allRadios[j].checked = true;
                         }
-                        if (option.items[i].image_src) {
+                        if (option.items[i].color) {
+                            var img = document.createElement('div');
+                            img.className = 'itoris-dynamicoptions-thumbnail-color';
+                            img.style.background = option.items[i].color;
+                            allRadios[j].up().appendChild(img);
+                            img.insert({after: this.createClearBothDiv()});
+                            Event.observe(img, 'click', function(radio) {
+                                radio.click();
+                            }.bind(this, allRadios[j]));
+                            hasImages = true;
+                            if (option.items[i].swatch) allRadios[j].up('div.choice').addClassName('dpo_swatch');
+                        } else if (option.items[i].image_src) {
                             var img = document.createElement('img');
+                            img.className += ' itoris-dynamicoptions-thumbnail-image';
                             img.src = option.items[i].image_src;
                             allRadios[j].up().appendChild(img);
                             img.insert({after: this.createClearBothDiv()});
@@ -897,6 +911,19 @@ define([
                                 radio.click();
                             }.bind(this, allRadios[j]));
                             hasImages = true;
+                            if (option.items[i].swatch) allRadios[j].up('div.choice').addClassName('dpo_swatch');
+                        }
+                        if (j == 1 && (option.items[i].image_src || option.items[i].color) && option.items[i].swatch && allRadios[0].value == "") {
+                            var img = document.createElement('div');
+                            img.className = 'itoris-dynamicoptions-thumbnail-color dpo-choice-none';
+                            img.style.background = 'transparent';
+                            allRadios[0].up().appendChild(img);
+                            img.insert({after: this.createClearBothDiv()});
+                            Event.observe(img, 'click', function(radio) {
+                                radio.click();
+                            }.bind(this, allRadios[0]));
+                            hasImages = true;
+                            if (option.items[i].swatch) allRadios[0].up('div.choice').addClassName('dpo_swatch');
                         }
                         if (parseInt(option.items[i].carriage_return)) {
                             carriageReturnElms.push(allRadios[j]);

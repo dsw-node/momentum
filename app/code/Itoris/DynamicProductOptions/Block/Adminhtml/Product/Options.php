@@ -380,7 +380,7 @@ class Options extends \Magento\Backend\Block\Template
      * @return \Itoris\DynamicProductOptions\Helper\Data
      */
     protected function getDataHelper() {
-        return $this->_objectManager->create('Itoris\DynamicProductOptions\Helper\Data');
+        return $this->_objectManager->get('Itoris\DynamicProductOptions\Helper\Data');
     }
 
     /**
@@ -396,7 +396,7 @@ class Options extends \Magento\Backend\Block\Template
         $config = $this->_objectManager->create('Magento\Cms\Model\Wysiwyg\Config')->getConfig($wysiwyg);
         $form = new \Magento\Framework\DataObject();
         $wysiwyg->setConfig($config)->setForm($form)->setHtmlId('dpo_abstract_wysiwyg');
-        echo $wysiwyg->getElementHtml();
+        return $wysiwyg->getElementHtml();
     }
     
     public function getMediaUrl(){

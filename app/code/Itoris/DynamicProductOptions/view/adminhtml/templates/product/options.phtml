@@ -306,11 +306,12 @@
 			<thead>
 			<tr>
 				<th class="field-label"><?php echo $block->escapeHtml(__('Title')) ?></th>
-				<th class="field-label only-radio" style="width: 170px;"><?php echo $block->escapeHtml(__('Image SRC or Color')) ?></th>
-				<th class="field-label only-radio"><?php echo $block->escapeHtml(__('Swatch')) ?></th>
+				<th class="field-label" style="width: 210px;"><?php echo $block->escapeHtml(__('Image SRC or Color')) ?></th>
+				<th class="field-label only-radio" style="width:60px"><?php echo $block->escapeHtml(__('Swatch')) ?></th>
 				<th class="field-label" style="width: 35px;"><?php echo $block->escapeHtml(__('Price')) ?></th>
 				<th class="field-label" style="width:60px"><?php echo $block->escapeHtml(__('Price Type')) ?></th>
-				<th class="field-label" style="width:35px"><?php echo $block->escapeHtml(__('Tier')) ?></th>
+                <th class="field-label" style="width:50px"><?php echo $block->escapeHtml(__('Onetime Fee?')) ?></th>
+				<th class="field-label" style="width:38px"><?php echo $block->escapeHtml(__('Tier')) ?></th>
 				<th class="field-label"><?php echo $block->escapeHtml(__('Sku/Product Id')) ?></th>
 
                 <th class="field-label"><?php echo $block->escapeHtml(__('Weight')) ?></th>
@@ -323,6 +324,7 @@
 				<th class="field-label" style="width: 95px;"><?php echo $block->escapeHtml(__('User Groups')) ?></th>
 				<th class="field-label only-radio" style="width: 60px;"><?php echo $block->escapeHtml(__('Carriage return')) ?></th>
 				<th class="field-label"><?php echo $block->escapeHtml(__('Css Class')) ?></th>
+                <th class="field-label only-radio" style="width:40px"><?php echo $block->escapeHtml(__('Tooltip')) ?></th>
 				<th class="field-label" style="width: 56px;"><?php echo $block->escapeHtml(__('Order')) ?></th>
 				<th class="field-label"><?php echo $block->escapeHtml(__('Del')) ?></th>
 			</tr>
@@ -342,7 +344,7 @@
 					<div class="dynamicoptions-edit-pin-icon pin-linked-item-title" style="margin-left:5px;float: left;" title="<?php echo __('Use title from product') ?>"></div>
 					<div class="dynamicoptions-edit-pen-icon edit-linked-item-title" style="margin-left:5px;float: left;" title="<?php echo __('Override product\'s name') ?>"></div>
                 </td>
-				<td class="only-radio">
+				<td>
 					<div class="remove-img-icon" style="display: none;"></div>
 					<button type="button"><?php echo $block->escapeHtml(__('Upload Image')) ?></button>
                     <span class="dynamicoptions-value-base_img-span">
@@ -352,7 +354,11 @@
 					<input type="hidden" class="dynamicoptions-value-image_src" />
                     <input type="hidden" class="dynamicoptions-value-color" />
 				</td>
-                <td class="only-radio"><input type="checkbox" class="dynamicoptions-value-swatch" /></td>
+                <td class="only-radio">
+                    <input type="checkbox" class="dynamicoptions-value-swatch" />
+					<div class="dynamicoptions-edit-pen-icon edit-value-swatchhtml" title="<?php echo __('Design Swatch') ?>"></div>
+					<span class="dynamicoptions-has-swatchhtml" style="color:blue" title="<?php echo __('Edit Swatch HTML') ?>"></span>
+                </td>
 				<td><input type="text" class="dynamicoptions-value-price" /></td>
 				<td>
 					<select class="dynamicoptions-value-price_type">
@@ -360,6 +366,7 @@
 						<option value="percent"><?php echo $block->escapeHtml(__('Percent')) ?></option>
 					</select>
 				</td>
+                <td style="text-align:center"><input type="checkbox" class="dynamicoptions-value-onetime" /></td>
 				<td>
 					<div class="dynamicoptions-edit-pen-icon edit-value-tier"></div>
 					<span class="dynamicoptions-tier-popup-container"></span>
@@ -397,6 +404,10 @@
 				</td>
 				<td class="only-radio"><input type="checkbox" class="dynamicoptions-value-carriage_return" /></td>
 				<td><input type="text" class="dynamicoptions-value-css_class" /></td>
+				<td class="only-radio">
+					<div class="dynamicoptions-edit-pen-icon edit-value-tooltip"></div>
+					<span class="dynamicoptions-has-tooltip" style="color:blue" title="<?php echo __('Edit Tooltip') ?>"></span>
+				</td>
 				<td>
 					<input type="text" class="dynamicoptions-value-order" style="width:20px;" />
 					<div class="sort-arrows-box">
@@ -414,7 +425,8 @@
 <tr class="tr-dynamicoptions-all">
 	<td class="field-label"><?php echo $block->escapeHtml(__('Visibility')) ?></td>
 	<td class="field-label"><?php echo $block->escapeHtml(__('Make it')) ?></td>
-	<td colspan="6" class="field-label"><?php echo $block->escapeHtml(__('If')) ?></td>
+	<td colspan="5" class="field-label"><?php echo $block->escapeHtml(__('If')) ?></td>
+    <td class="field-label tooltip-td"><?php echo $block->escapeHtml(__('Tooltip')) ?></td>
 </tr>
 <tr class="tr-dynamicoptions-all">
 	<td>
@@ -431,8 +443,12 @@
 			<?php endforeach; ?>
 		</select>
 	</td>
-	<td colspan="6">
+	<td colspan="5">
 		<div class="dynamicoptions-edit-pen-icon edit-field-condition"></div><input type="text" class="dynamicoptions-visibility_condition" style="width:90%;" />
+	</td>
+	<td style="position:relative" class="tooltip-td">
+        <div class="dynamicoptions-edit-pen-icon edit-tooltip"></div>
+        <span class="dynamicoptions-has-tooltip" style="color:blue; float:left;" title="<?php echo __('Edit Tooltip') ?>"></span>
 	</td>
 </tr>
 <tr class="tr-dynamicoptions-all">

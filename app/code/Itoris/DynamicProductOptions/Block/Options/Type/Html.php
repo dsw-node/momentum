@@ -29,13 +29,17 @@ namespace Itoris\DynamicProductOptions\Block\Options\Type;
 class Html extends AbstractOptions
 {
     protected function _construct() {
-        $this->setTemplate('option/html.phtml');
+        $this->setTemplate('Itoris_DynamicProductOptions::option/html.phtml');
     }
     
     public function parseMediaVariables($str) {
         preg_match_all('/{{media url=\"(.*?)\"}}/', $str, $matches);
         $mediaUrl = $this->getMediaUrl();
         foreach($matches[0] as $key => $match) $str = str_replace($matches[0][$key], $mediaUrl.$matches[1][$key], $str);
+        
+        preg_match_all('/{{store direct_url=\"(.*?)\"}}/', $str, $matches);
+        $baseUrl = $this->getBaseUrl();
+        foreach($matches[0] as $key => $match) $str = str_replace($matches[0][$key], $baseUrl.$matches[1][$key], $str);
         return $str;
     }
     
@@ -43,5 +47,11 @@ class Html extends AbstractOptions
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
         $store = $objectManager->get('Magento\Store\Model\StoreManagerInterface')->getStore(0);
         return $store->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA );
+    }
+    
+    public function getBaseUrl(){
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+        $store = $objectManager->get('Magento\Store\Model\StoreManagerInterface')->getStore();
+        return $store->getBaseUrl();
     }
 }

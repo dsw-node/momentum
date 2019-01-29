@@ -110,7 +110,11 @@ class Select extends \Magento\Catalog\Model\Product\Option\Type\Select
                     if ($this->_canHasImage($option->getType())) {
                         $imageSrc = $this->_getValueImageSrc($_value);
                         if ($imageSrc) {
-                            $result .= '<img src="' . $imageSrc . '" width="200" style="display:block; max-width:200px"/>';
+                            if (strpos($imageSrc, 'color:') !== false) {
+                                $result .= '<div style="width:75px; height:75px; background-'.$imageSrc.'"></div>';
+                            } else {
+                                $result .= '<img src="' . $imageSrc . '" width="150" style="display:block; max-width:150px; max-height:150px"/>';
+                            }
                         } else {
                             $result .= '<br/>';
                         }
@@ -146,7 +150,11 @@ class Select extends \Magento\Catalog\Model\Product\Option\Type\Select
                 if ($this->_canHasImage($option->getType())) {
                     $imageSrc = $this->_getValueImageSrc($optionValue);
                     if ($imageSrc) {
-                        $result .= '<img src="' . $imageSrc . '" width="200" style="display:block; max-width:200px"/>';
+                        if (strpos($imageSrc, 'color:') !== false) {
+                            $result .= '<div style="width:75px; height:75px; background-'.$imageSrc.'"></div>';
+                        } else {
+                            $result .= '<img src="' . $imageSrc . '" width="150" style="display:block; max-width:150px; max-height:150px"/>';
+                        }
                     }
                 }
             } else {
@@ -166,10 +174,11 @@ class Select extends \Magento\Catalog\Model\Product\Option\Type\Select
     }
 
     protected function _canHasImage($type) {
-        return in_array($type, ['radio', 'checkbox']);
+        return in_array($type, ['radio', 'checkbox', 'drop_down']);
     }
 
     protected function _getValueImageSrc($valueId) {
+        if ($this->_backendConfig->getValue('itoris_dynamicproductoptions/general/hide_cart_images')) return;
         $value = $this->_objectManager->create('Itoris\DynamicProductOptions\Model\Option\Value')->load($valueId, 'orig_value_id');
         $img_src = $value->getImageSrc();
         //if ($this->getItorisHelper()->isAdmin()) return $img_src;
@@ -182,6 +191,9 @@ class Select extends \Magento\Catalog\Model\Product\Option\Type\Select
             }
             $img_src = str_ireplace(['http://', 'https://', '//'], $this->_httpProtocol, $img_src);
         }
+        $config = json_decode($value->getConfiguration(), true);
+        if (isset($config['color']) && $config['color']) $img_src = 'color:'.$config['color'];
+        
         return $img_src;
     }
 
@@ -209,12 +221,8 @@ class Select extends \Magento\Catalog\Model\Product\Option\Type\Select
             $dpoObj = $this->_objectManager->create('Itoris\DynamicProductOptions\Model\Options')->setStoreId($product->getStoreId())->load($product->getId(), 'product_id');
             if (!$dpoObj->getConfigId()) $dpoObj->setStoreId(0)->load($product->getId(), 'product_id');
             if ($dpoObj->getAbsolutePricing() == 1) { //absolute price
-                if ($product->getTypeId() == 'configurable') {
-                    $price -= $basePrice;
-                } else {
-                    $price -= $product->getFinalPrice();
-                }
-                $product->setOptionsAbsolutePricing(1);
+                $price -= $basePrice;
+                $product->setOptionsAbsolutePricing(1); 
                 if ($item) $item->setOptionsAbsolutePricing(1);
             } else if ($dpoObj->getAbsolutePricing() == 2) { //fixed price
                 $price = 0;
@@ -324,17 +332,31 @@ class Select extends \Magento\Catalog\Model\Product\Option\Type\Select
         $config = json_decode($config, true);
         if (isset($config['sku_is_product_id_linked']) && (int) $config['sku_is_product_id_linked'] && (int) $config['sku_is_product_id']) {
             $product = $this->_objectManager->create('Magento\Catalog\Model\Product')->load((int) $config['sku']);
-            return [$product->getTierPrice($qty), 'fixed'];
+            $customerSession = $this->_objectManager->get('Magento\Customer\Model\Session');
+            $customerGroup = $customerSession->isLoggedIn() ? $customerSession->getCustomer()->getGroupId() : 0;
+            $tierPricesList = array_reverse($product->getTierPrices());
+            foreach ($tierPricesList as $tierPrice) {
+                if ($qty >= (float)$tierPrice->getQty() && ($tierPrice->getCustomerGroupId() == 32000 || $tierPrice->getCustomerGroupId() == $customerGroup)) return [(float)$tierPrice->getValue(), 'fixed'];
+            }
+            $price = $product->getFinalPrice($qty);
+            if (!$price) $price = $product->getTierPrice($qty);
+            if (isset($config['onetime']) && (int) $config['onetime']) $price /= $qty;
+            return [$price, 'fixed'];
         }
 
-        if (!isset($config['tier_price'])) return [$price, $price_type];
-        $tier_prices = (array) json_decode($config['tier_price']);
-        foreach($tier_prices as $tier) {
-            if ($qty >= $tier->qty) {
-                $price = $tier->price;
-                $price_type = $tier->price_type;
+        if (isset($config['tier_price'])) {
+            $tier_prices = (array) json_decode($config['tier_price']);
+            foreach($tier_prices as $tier) {
+                if ($qty >= $tier->qty) {
+                    $price = $tier->price;
+                    $price_type = $tier->price_type;
+                }
             }
         }
+        
+        //check if onetime fee
+        if (isset($config['onetime']) && (int) $config['onetime']) $price /= $qty;
+        
         return [$price, $price_type];
     }
 
@@ -342,6 +364,6 @@ class Select extends \Magento\Catalog\Model\Product\Option\Type\Select
      * @return \Itoris\DynamicProductOptions\Helper\Data
      */
     public function getItorisHelper(){
-        return $this->_objectManager->create('Itoris\DynamicProductOptions\Helper\Data');
+        return $this->_objectManager->get('Itoris\DynamicProductOptions\Helper\Data');
     }
 }

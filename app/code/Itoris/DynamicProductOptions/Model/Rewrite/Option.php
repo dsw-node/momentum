@@ -32,6 +32,8 @@ class Option extends \Magento\Catalog\Model\Product\Option
      * @var \Magento\Framework\ObjectManagerInterface|null
      */
     protected $_objectManager = null;
+    
+    protected $_product = null;
     /**
      * @param \Magento\Framework\ObjectManagerInterface $objectManager
      * @param \Magento\Framework\Model\Context $context
@@ -162,14 +164,15 @@ class Option extends \Magento\Catalog\Model\Product\Option
      * @return \Itoris\DynamicProductOptions\Helper\Data
      */
     public function getItorisHelper(){
-        return $this->_objectManager->create('Itoris\DynamicProductOptions\Helper\Data');
+        return $this->_objectManager->get('Itoris\DynamicProductOptions\Helper\Data');
     }
     
     public function getProduct() {
         $product = parent::getProduct();
-        if (!$product && (int) $this->getProductId()) {
-            return $this->_objectManager->create('Magento\Catalog\Model\Product')->load($this->getProductId());
+        if (!$product && $this->_product === null && (int) $this->getProductId()) {
+            $this->_product = $this->_objectManager->create('Magento\Catalog\Model\Product')->load($this->getProductId());
         }
+        if (!$product) $product = $this->_product;
         return $product;
     }
     

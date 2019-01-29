@@ -37,6 +37,7 @@ class Edit extends \Magento\Backend\Block\Widget\Form\Container
 
         $this->buttonList->remove('reset');
         $this->buttonList->update('save', 'class', 'save');
+        $this->buttonList->update('save', 'onclick', 'jQuery(\'#edit_form\').attr({\'action\': \''.$this->_getSaveUrl().'\'}); jQuery(\'#edit_form\').form().submit()');
         $this->addButton('saveandcontinue', [
             'label'     => $this->escapeHtml(__('Save and Continue Edit')),
             'onclick'   => 'jQuery(\'#edit_form\').attr({\'action\': \''.$this->_getSaveAndContinueUrl().'\'}); jQuery(\'#edit_form\').form().submit()',
@@ -59,6 +60,12 @@ class Edit extends \Magento\Backend\Block\Widget\Form\Container
         }
     }
 
+    protected function _getSaveUrl() {
+        return $this->getUrl('*/*/save', [
+            '_current'  => true
+        ]);
+    }
+    
     protected function _getSaveAndContinueUrl() {
         return $this->getUrl('*/*/save', [
             '_current'  => true,

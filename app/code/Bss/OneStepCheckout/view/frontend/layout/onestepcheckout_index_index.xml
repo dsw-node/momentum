@@ -58,7 +58,7 @@
                                                                     </item>
                                                                 </item>
                                                                 <item name="bss_osc_delivery_comment" xsi:type="array">
-                                                                    <item name="label" xsi:type="string" translate="true">Delivery Comment</item>
+                                                                    <item name="label" xsi:type="string" translate="true">Delivery Comments</item>
                                                                     <item name="component" xsi:type="string">Magento_Ui/js/form/element/textarea</item>
                                                                     <item name="dataScope" xsi:type="string">before-shipping-method-form.bss_osc_delivery_comment</item>
                                                                     <item name="config" xsi:type="array">
@@ -113,7 +113,7 @@
                                         </item>
                                        <item name="bss_osc_order_comment" xsi:type="array">
                                             <item name="component" xsi:type="string">Magento_Ui/js/form/element/textarea</item>
-                                            <item name="label" xsi:type="string" translate="true">Order Comment</item>
+                                            <item name="label" xsi:type="string" translate="true">Order Comments</item>
                                             <item name="displayArea" xsi:type="string">summary</item>
                                             <item name="sortOrder" xsi:type="string">220</item>
                                             <item name="config" xsi:type="array">

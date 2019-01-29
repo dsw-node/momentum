@@ -45,7 +45,7 @@ class SaveBuyRequest implements ObserverInterface
     ) {
         $this->_request = $request;
         $this->_objectManager = $objectManager;
-        $this->isEnabledFlag = $this->_objectManager->create('Itoris\DynamicProductOptions\Helper\Data')->getSettings()->getEnabled();
+        $this->isEnabledFlag = $this->_objectManager->get('Itoris\DynamicProductOptions\Helper\Data')->getSettings()->getEnabled();
     }
     public function execute(\Magento\Framework\Event\Observer $observer) {
         if ($this->isEnabledFlag) {

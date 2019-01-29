@@ -35,7 +35,7 @@ class Options extends \Magento\Catalog\Block\Adminhtml\Product\Composite\Fieldse
     
     public function setTemplate($template) {
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-        if ($objectManager->create('Itoris\DynamicProductOptions\Helper\Data')->isEnabledOnFrontend()) {
+        if ($objectManager->get('Itoris\DynamicProductOptions\Helper\Data')->isEnabledOnFrontend()) {
             $template = 'Itoris_DynamicProductOptions::catalog/product/composite/fieldset/options.phtml';
         }
         return parent::setTemplate($template);

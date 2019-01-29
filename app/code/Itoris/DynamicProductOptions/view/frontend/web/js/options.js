@@ -2,22 +2,24 @@
 * Copyright © 2016 ITORIS INC. All rights reserved.
 * See license agreement for details
 */
+
 window.DynamicProductOptions = {
     dateFormat : 'm/d/y',
     groupProducts: [],
     groupPopupContent: null,
     selectedBaseImgSwatches: [],
-    initialize : function(config, options, isGrouped, tierPrices, translations) {
+    initialize : function(config, options, isGrouped, tierPrices, translations, taxInfo) {
         var obj = this;
         this.priceBoxSelector = '#itoris_dynamicproductoptions_popup_price [data-role=priceBox], [data-role=priceBox][data-product-id="'+config.product_id+'"]';
-        if ((!jQuery.mage || !jQuery.mage.priceOptions && !this.getPriceBox()[0]) && options.length) {
+        if ((!jQuery.mage || !jQuery.mage.priceOptions || !this.getPriceBox()[0]) && options.length) {
             //wait until priceOptions widget is loaded and initialized
-            setTimeout(function(){obj.initialize(config, options, isGrouped, tierPrices, translations);}, 200);
+            setTimeout(function(){obj.initialize(config, options, isGrouped, tierPrices, translations, taxInfo);}, 200);
             return;
         }
         jQuery('.catalog-product-view #product_addtocart_form').show();
         config.is_grouped = isGrouped;
         this.config = config;
+        this.taxInfo = taxInfo;
         this.options = options;
         this.tierPrices = tierPrices;
         this.translations = translations;
@@ -52,6 +54,10 @@ window.DynamicProductOptions = {
             }
         }
         Event.observe(window, 'resize', this.correctPopupPosition.bind(this));
+        Event.observe(window, 'click', function(){
+            $$('.dpo_dd_list_outer').each(function(dd){dd.remove();});
+            $$('.open-dd').each(function(dd){dd.removeClassName('open-dd');});
+        });
         jQuery('#qty').on('change', function(){jQuery('.use_product_qty').trigger('change'); obj.updateAllPrices();});
         jQuery('#itoris_dynamicoptions_qty').on('change', function(){ jQuery('#qty').val(this.value); jQuery('#qty').trigger('change'); });
         //hide empty sections
@@ -59,6 +65,9 @@ window.DynamicProductOptions = {
             if (!section.select('input, select, textarea, img')[0]) jQuery(section).css({display: 'none'}).addClass('hidden');
         });
         this.negativePriceCheck();
+        
+        //running custom JS right after initialization
+        if (this.config.extra_js) eval(this.config.extra_js);
     },
     initForm : function() {
         if (this.config.is_grouped) {
@@ -255,6 +264,7 @@ window.DynamicProductOptions = {
         }
     },
     prepareOptions : function() {
+        var _this = this;
         this.canUseEffects = false;
         this.canReloadPrice = false;
         $$('select').each(function(select){
@@ -293,25 +303,28 @@ window.DynamicProductOptions = {
                         }
                     }
 
-                    if (this.options[i].type == 'field' && this.options[i].validation) {
+                    if (this.options[i].type == 'field') {
                         var inputElm = origField.select('input')[0];
                         if (inputElm) {
-                            switch (this.options[i].validation) {
-                                case 'email':
-                                    inputElm.addClassName('validate-email');
-                                    break;
-                                case 'number':
-                                    inputElm.addClassName('validate-digits');
-                                    break;
-                                case 'money':
-                                    inputElm.addClassName('validate-money');
-                                    break;
-                                case 'phone':
-                                    inputElm.addClassName('validate-phone-number');
-                                    break;
-                                case 'zip':
-                                    inputElm.addClassName('validate-zip');
-                                    break;
+                            this.options[i].elm = inputElm;
+                            if (this.options[i].validation) {
+                                switch (this.options[i].validation) {
+                                    case 'email':
+                                        inputElm.addClassName('validate-email');
+                                        break;
+                                    case 'number':
+                                        inputElm.addClassName('validate-digits');
+                                        break;
+                                    case 'money':
+                                        inputElm.addClassName('validate-money');
+                                        break;
+                                    case 'phone':
+                                        inputElm.addClassName('validate-phone-number');
+                                        break;
+                                    case 'zip':
+                                        inputElm.addClassName('validate-zip');
+                                        break;
+                                }
                             }
                         }
                     }
@@ -335,6 +348,14 @@ window.DynamicProductOptions = {
                             }
                         }
                     }.bind(this));
+                    if (this.options[i].tooltip) {
+                        this.createTooltip(dynamicField.select('> label')[0] ? dynamicField.select('> label')[0] : dynamicField, this.options[i].tooltip, false);
+                    }
+                    if (this.options[i].items && this.options[i].items.length) this.options[i].items.each(function(o){
+                        if (o.tooltip && o.elm && o.elm.up('.choice')) {
+                            _this.createTooltip(o.elm.up('.choice').select('> label')[0] ? o.elm.up('.choice').select('> label')[0] : o.elm.up('.choice'), o.tooltip, true);
+                        }
+                    });
                 }
             }
         }
@@ -358,7 +379,10 @@ window.DynamicProductOptions = {
             var finalPrice = priceBox.options.priceConfig.prices ? priceBox.options.priceConfig.prices.finalPrice : priceBox.options.prices.finalPrice;
             var basePrice = priceBox.options.priceConfig.prices ? priceBox.options.priceConfig.prices.basePrice : (priceBox.options.prices.basePrice ? priceBox.options.prices.basePrice : priceBox.options.prices.finalPrice);
 
-            if (!obj.taxRate) obj.taxRate = (basePrice.amount && finalPrice.amount) ? finalPrice.amount / basePrice.amount : 1;
+            obj.taxRate = obj.taxInfo.taxRate;
+            if (!obj.taxInfo.priceAlreadyIncludesTax && obj.taxInfo.displayPriceMode == 1 || obj.taxInfo.priceAlreadyIncludesTax && obj.taxInfo.displayPriceMode == 2) obj.taxRate = 1;
+            
+
             if (!obj.initialPrices) obj.initialPrices = {basePrice: basePrice.amount, finalPrice: finalPrice.amount};
 
             for(key in prices) {
@@ -381,7 +405,16 @@ window.DynamicProductOptions = {
                         prices[key].basePrice.amount = tierPrice * (qtyElm.hasClassName('use_product_qty') ? 1 : qty);
                         prices[key].finalPrice.amount = tierPrice * obj.taxRate * (qtyElm.hasClassName('use_product_qty') ? 1 : qty);
                     }
-                }                
+                }
+                
+                //checking for onetime fee
+                var config = obj.getConfigByKey(key);
+                if (config && config.onetime && obj.getQtyField().value - 0 > 0 && prices[key].basePrice) {
+                    if (!prices[key].dpoPrice2 || prices[key].dpoPrice) prices[key].dpoPrice2 = {amount: prices[key].basePrice.amount};
+                    prices[key].basePrice.amount = prices[key].dpoPrice2.amount / obj.getQtyField().value;
+                    prices[key].finalPrice.amount = prices[key].dpoPrice2.amount * obj.taxRate / obj.getQtyField().value;                    
+                }
+                
                 if (obj.config.absolute_pricing == 2 && prices[key].basePrice) { //fixed pricing
                     prices[key].basePrice.amount = 0;
                     prices[key].finalPrice.amount = 0;
@@ -421,7 +454,7 @@ window.DynamicProductOptions = {
                         }
                     }
                 }
-                for(var i=0; i<tierPrices.length; i++) {
+                if (tierPrices && tierPrices.length) for(var i=0; i<tierPrices.length; i++) {
                     if (tierPrices[i].qty <= obj.getQtyField().value - 0) productTierPrice = tierPrices[i].price;
                 }
                 if (productTierPrice > 0) {
@@ -448,6 +481,65 @@ window.DynamicProductOptions = {
         this.checkVisibilityConditions();
         this.canUseEffects = true;
         this.canReloadPrice = true;
+        
+        jQuery('#itoris_dynamicproductoptions').on('change', 'input[type="checkbox"], input[type="radio"], select', function(){obj.updateSku();});
+        jQuery('#itoris_dynamicproductoptions').on('keyup', 'input[type="text"], textarea', function(){obj.updateSku();});
+        this.updateSku();
+
+    },
+    updateSku: function() {
+        var skuObj = jQuery('.sku .value');
+        if (skuObj[0]) {
+            var sku = jQuery('#product_addtocart_form').attr('data-product-sku');
+            if (!sku) {
+                jQuery('#product_addtocart_form').attr('data-product-sku', skuObj.text());
+                sku = skuObj.text();
+            }
+            if (this.config.absolute_sku == 1) sku = ''; //absolute sku
+            if (this.config.absolute_sku != 2) { //not fixed sku
+                this.options.each(function(o){
+                    var optionSku = o.sku ? o.sku : '';
+                    if (optionSku && optionSku.indexOf('$1') > -1 && o.elm) optionSku = optionSku.replace('$1', jQuery.trim(o.elm.value));
+                    if (o.items) {
+                        o.items.each(function(v){
+                            if (v.elm && (v.elm.selected || v.elm.checked) && v.sku && !v.sku_is_product_id) {
+                                optionSku += (optionSku ? '-' : '') + v.sku;
+                                if (optionSku && optionSku.indexOf('$1') > -1) optionSku = optionSku.replace('$1', jQuery.trim(v.title));
+                            }
+                        });
+                    }
+                    if (optionSku) sku += (sku ? '-' : '') + optionSku;
+                });
+            }
+            skuObj.text(sku);
+        } 
+    },
+    createTooltip: function(afterElm, html, isChoice) {
+        var icon = jQuery('<span class="dpo_tooltip_icon"></span>').appendTo(afterElm);
+        icon[0].tooltip = html;
+        icon.on('mouseover click', function(){
+            if (!this.tooltipElm) this.tooltipElm = jQuery('<div class="dpo_tooltip_body"></div>').html(this.tooltip).appendTo(this);
+            this.tooltipElm.css({'margin-left': '0px', width: ''});
+            if (isChoice) this.tooltipElm.css({left: (jQuery(afterElm).width() - this.tooltipElm.width()) / 2 + 5 + 'px'});
+            var maxWidth = jQuery(window).width() - 40, offsetWidth = this.tooltipElm.width();
+            if (offsetWidth > maxWidth) this.tooltipElm.css({width: maxWidth + 'px'});
+            var offset = this.tooltipElm.offset(), offsetWidth = this.tooltipElm.width();
+            if (offset.left + offsetWidth > maxWidth) this.tooltipElm.css({'margin-left': maxWidth - offsetWidth - offset.left + 5 + 'px'});
+            var offset = this.tooltipElm.offset();
+            if (offset.left < 5) this.tooltipElm.css({'margin-left': Math.abs(offset.left) + 5 + 'px'});            
+        });
+    },
+    getConfigByKey: function(key) {
+        var elm = jQuery('[name="'+key+'"] option:selected, [name="'+key+'"]:checked, [name="'+key.replace('##', '"][value="')+'"]:checked'), config = false;
+        if (elm[0]) {
+            var parent = elm.closest('select, .options-list');
+            if (parent[0] && parent[0].config && parent[0].config.items) {
+                parent[0].config.items.each(function(item){
+                    if (!config && item.elm === elm[0]) config = item;
+                });                
+            }
+        }
+        return config;
     },
     updateAllPrices: function() {
         $$('#itoris_dynamicproductoptions select, #itoris_dynamicproductoptions textarea, #itoris_dynamicproductoptions input[type=text]').each(function(elm){
@@ -573,7 +665,7 @@ window.DynamicProductOptions = {
             }
             switch (visibility) {
                 case 'visible':
-                    if (field.visible() && !field.hasClassName('field-disabled') && !field.disabled) break;
+                    if (field.visible() && !field.hasClassName('field-disabled') && !field.disabled && field.tagName.toLowerCase() != 'option') break;
                     this.showField(field);
                     var _parent = field.up('.field');
                     if (_parent && _parent.hasClassName('field-disabled')) break;
@@ -622,7 +714,7 @@ window.DynamicProductOptions = {
                                 elm.checked = false;
                                 elm.value = valueTmp;
                             }
-                            elm.disabled = true;
+                            if (elm.type != 'file') elm.disabled = true;
                             if (elm.hasClassName('option-qty')) elm.value = 1;
                         }.bind(this));
                     }
@@ -979,9 +1071,36 @@ window.DynamicProductOptions = {
                         continue;
                     } else if (parseInt(option.items[i].is_selected) && !$$('body.checkout-cart-configure')[0]) {
                         var checked = $$('input[name="'+allRadios[j].name+'"]:checked')[0];
-                        if (!checked || !checked.value || allRadios[j].type == 'checkbox') allRadios[j].checked = true;
+                        if (!checked || !checked.value || allRadios[j].type == 'checkbox') {allRadios[j].checked = true; jQuery(allRadios[j]).trigger('change');}
                     }
-                    if (option.items[i].image_src) {
+                    if (option.items[i].swatch && option.items[i].swatchhtml) {
+                        option.items[i].swatchhtml = option.items[i].swatchhtml.replace(/{title}/g, option.items[i].title);
+                        option.items[i].swatchhtml = option.items[i].swatchhtml.replace(/{price}/g, formatCurrency(option.items[i].price ? parseFloat(option.items[i].price) : 0, this.getPriceBox().data('magePriceBox').options.priceConfig.priceFormat, false));
+                        option.items[i].swatchhtml = option.items[i].swatchhtml.replace(/{tooltip}/g, '<span class="dpo_tooltip"></span>');
+
+                        var img = document.createElement('div');
+                        img.className = 'itoris-dynamicoptions-swatch_html';
+                        img.innerHTML = option.items[i].swatchhtml;
+                        if (option.items[i].tooltip && img.select('.dpo_tooltip')[0]) this.createTooltip(img.select('.dpo_tooltip')[0], option.items[i].tooltip, false);
+                        allRadios[j].up().appendChild(img);
+                        img.insert({after: this.createClearBothDiv()});
+                        Event.observe(img, 'click', function(radio) {
+                            radio.click();
+                        }.bind(this, allRadios[j]));
+                        hasImages = true;
+                        allRadios[j].up('div.choice').addClassName('dpo_swatch_custom_html dpo_swatch');
+                    } else if (option.items[i].color) {
+                        var img = document.createElement('div');
+                        img.className = 'itoris-dynamicoptions-thumbnail-color';
+                        img.style.background = option.items[i].color;
+                        allRadios[j].up().appendChild(img);
+                        img.insert({after: this.createClearBothDiv()});
+                        Event.observe(img, 'click', function(radio) {
+                            radio.click();
+                        }.bind(this, allRadios[j]));
+                        hasImages = true;
+                        if (option.items[i].swatch) allRadios[j].up('div.choice').addClassName('dpo_swatch');
+                    } else if (option.items[i].image_src) {
                         var img = document.createElement('img');
                         if (this.getAppearance() == 'popup_configure' || this.getAppearance() == 'popup_cart') {
                             var img = document.createElement('div');
@@ -995,56 +1114,55 @@ window.DynamicProductOptions = {
                             radio.click();
                         }.bind(this, allRadios[j]));
                         hasImages = true;
-                        if (option.items[i].base_img) {
-                            allRadios[j].fotoramaImg =  option.items[i].image_src;                            
-                            Event.observe(allRadios[j], 'click', function() {
-                                if (this.checked && jQuery('.fotorama-item')[0]) {
-                                    if (!_obj.defaultGalleryImages) {
-                                        _obj.defaultGalleryImages = [];
-                                        jQuery('.fotorama-item').fotorama().data('fotorama').data.each(function(_thumb){
-                                            _obj.defaultGalleryImages.push({img: _thumb.img, thumb: _thumb.thumb});
-                                        });
-                                    }
-                                    _obj.selectedBaseImgSwatches.push(this);
+                        if (option.items[i].swatch) allRadios[j].up('div.choice').addClassName('dpo_swatch');
+                    } else if (option.items[i].swatch) allRadios[j].up('div.choice').addClassName('dpo_swatch_text');
+                    
+                    if (option.items[i].base_img) {
+                        allRadios[j].fotoramaImg =  option.items[i].image_src;                            
+                        Event.observe(allRadios[j], 'click', function() {
+                            if (this.checked && jQuery('.fotorama-item')[0]) {
+                                if (!_obj.defaultGalleryImages) {
+                                    _obj.defaultGalleryImages = []; //console.log(jQuery('.fotorama-item').fotorama().data('fotorama').data);
+                                    jQuery('.fotorama-item').fotorama().data('fotorama').data.each(function(_thumb){
+                                        _obj.defaultGalleryImages.push({img: _thumb.img, full: _thumb.full, thumb: _thumb.thumb, type: _thumb.type, mediaType: _thumb.type, videoUrl: _thumb.videoUrl, i: _thumb.i});
+                                    });
                                 }
-                            });
-                            if (!field.swatchAttached) {
-                                Event.observe(field, 'click', function(){
-                                    if (!_obj.defaultGalleryImages) return;
-                                    var newGallery = _obj.defaultGalleryImages.slice(0);
-                                    for(var o=_obj.selectedBaseImgSwatches.length - 1; o>=0; o--) {
-                                        if (!_obj.selectedBaseImgSwatches[o].checked) _obj.selectedBaseImgSwatches.splice(o, 1);
-                                    }
-                                    _obj.selectedBaseImgSwatches.each(function(swatch){newGallery.unshift({img: swatch.fotoramaImg, thumb: swatch.fotoramaImg});})
-                                    jQuery('.fotorama-item').fotorama().data('fotorama').load(newGallery).show(0);                                    
-                                });
-                                field.swatchAttached = true;
+                                for(var o=_obj.selectedBaseImgSwatches.length - 1; o>=0; o--) {
+                                    if (_obj.selectedBaseImgSwatches[o] === this) _obj.selectedBaseImgSwatches.splice(o, 1);
+                                }
+                                _obj.selectedBaseImgSwatches.push(this);
                             }
+                        });
+                        if (!field.swatchAttached) {
+                            Event.observe(field, 'click', function(){
+                                if (!_obj.defaultGalleryImages) return;
+                                var newGallery = _obj.defaultGalleryImages.slice(0), idToShow = newGallery.length;
+                                for(var o=_obj.selectedBaseImgSwatches.length - 1; o>=0; o--) {
+                                    if (!_obj.selectedBaseImgSwatches[o].checked && !_obj.selectedBaseImgSwatches[o].selected) _obj.selectedBaseImgSwatches.splice(o, 1);
+                                }
+                                _obj.selectedBaseImgSwatches.each(function(swatch){newGallery.push({img: swatch.fotoramaImg, full: swatch.full, thumb: swatch.fotoramaImg, type: 'image'});});
+                                jQuery('.fotorama-item').fotorama().data('fotorama').load(newGallery).show(idToShow);
+                                try {jQuery('[data-gallery-role=gallery-placeholder]').data('mageAddFotoramaVideoEvents')._initialize()} catch(e) { }
+                            });
+                            field.swatchAttached = true;
                         }
-                        if (option.items[i].swatch) allRadios[j].up('div.choice').addClassName('dpo_swatch');
-                    } else if (option.items[i].color) {
-                        var img = document.createElement('div');
-                        img.className = 'itoris-dynamicoptions-thumbnail-color';
-                        img.style.background = option.items[i].color;
-                        allRadios[j].up().appendChild(img);
-                        img.insert({after: this.createClearBothDiv()});
-                        Event.observe(img, 'click', function(radio) {
-                            radio.click();
-                        }.bind(this, allRadios[j]));
-                        hasImages = true;
-                        if (option.items[i].swatch) allRadios[j].up('div.choice').addClassName('dpo_swatch');
                     }
-                    if (j == 1 && (option.items[i].image_src || option.items[i].color) && option.items[i].swatch && allRadios[0].value == "") {
-                        var img = document.createElement('div');
-                        img.className = 'itoris-dynamicoptions-thumbnail-color dpo-choice-none';
-                        img.style.background = 'transparent';
-                        allRadios[0].up().appendChild(img);
-                        img.insert({after: this.createClearBothDiv()});
-                        Event.observe(img, 'click', function(radio) {
-                            radio.click();
-                        }.bind(this, allRadios[0]));
-                        hasImages = true;
-                        if (option.items[i].swatch) allRadios[0].up('div.choice').addClassName('dpo_swatch');
+                    
+                    if (j == 1 && option.items[i].swatch && allRadios[0].value == "") {
+                        if (option.items[i].image_src || option.items[i].color) {
+                            var img = document.createElement('div');
+                            img.className = 'itoris-dynamicoptions-thumbnail-color dpo-choice-none';
+                            img.style.background = 'transparent';
+                            allRadios[0].up().appendChild(img);
+                            img.insert({after: this.createClearBothDiv()});
+                            Event.observe(img, 'click', function(radio) {
+                                radio.click();
+                            }.bind(this, allRadios[0]));
+                            hasImages = true;
+                            allRadios[0].up('div.choice').addClassName('dpo_swatch');
+                        } else {
+                            allRadios[0].up('div.choice').addClassName('dpo_swatch_text');
+                        }
                     }
                     if (parseInt(option.items[i].carriage_return)) {
                         carriageReturnElms.push(allRadios[j]);
@@ -1092,11 +1210,12 @@ window.DynamicProductOptions = {
         return div;
     },
     prepareDropdownOptions : function(field, option) {
-        var dropdown = field.select('select')[0];
+        var dropdown = field.select('select')[0], _obj = this, hasBaseImg = false, hasColorOrImg = false;
         var dropdownOptions = dropdown.select('option');
         if (option.type == 'drop_down' && option.default_select_title != '-- Please select --') {
             dropdownOptions[0].update(option.default_select_title);
         }
+        option.elm = dropdown;
         dropdown.qty_values = [];
         dropdown.tier_values = [];
         dropdown.qty_input_name = 'options_qty[' + option.id + ']';
@@ -1128,9 +1247,97 @@ window.DynamicProductOptions = {
                     if (option.items[i].tier_price && option.items[i].tier_price.length > 0) {
                         dropdown.tier_values[dropdownOptions[j].value] = option.items[i].tier_price;
                     }
+                    if (option.items[i].base_img) {
+                        option.items[i].elm.fotoramaImg =  option.items[i].image_src;
+                        hasBaseImg = true;
+                    }
+                    if (option.items[i].color || option.items[i].image_src) {
+                        option.items[i].elm.configColor = option.items[i].color;
+                        option.items[i].elm.configImg = option.items[i].image_src;
+                        hasColorOrImg = true;
+                    }
                     break;
                 }
             }
+        }
+        if (hasBaseImg) Event.observe(dropdown, 'change', function() {
+            if (this.options[this.selectedIndex].fotoramaImg && jQuery('.fotorama-item')[0]) {
+                if (!_obj.defaultGalleryImages) {
+                    _obj.defaultGalleryImages = [];
+                    jQuery('.fotorama-item').fotorama().data('fotorama').data.each(function(_thumb){
+                        _obj.defaultGalleryImages.push({img: _thumb.img, full: _thumb.full, thumb: _thumb.thumb, type: _thumb.type, mediaType: _thumb.type, videoUrl: _thumb.videoUrl, i: _thumb.i});
+                    });
+                }
+                for(var o=_obj.selectedBaseImgSwatches.length - 1; o>=0; o--) {
+                    if (_obj.selectedBaseImgSwatches[o] === this.options[this.selectedIndex]) _obj.selectedBaseImgSwatches.splice(o, 1);
+                }
+                _obj.selectedBaseImgSwatches.push(this.options[this.selectedIndex]);
+            }
+            if (!_obj.defaultGalleryImages) return;
+            var newGallery = _obj.defaultGalleryImages.slice(0), idToShow = newGallery.length;
+            for(var o=_obj.selectedBaseImgSwatches.length - 1; o>=0; o--) {
+                if (!_obj.selectedBaseImgSwatches[o].checked && !_obj.selectedBaseImgSwatches[o].selected) _obj.selectedBaseImgSwatches.splice(o, 1);
+            }
+            _obj.selectedBaseImgSwatches.each(function(swatch){newGallery.push({img: swatch.fotoramaImg, full: swatch.full, thumb: swatch.fotoramaImg, type: 'image', i: swatch.length + 1});});
+            jQuery('.fotorama-item').fotorama().data('fotorama').load(newGallery).show(idToShow);
+            try {jQuery('[data-gallery-role=gallery-placeholder]').data('mageAddFotoramaVideoEvents')._initialize()} catch(e) { }
+        });
+        if (hasColorOrImg) {
+            dropdown.up().style.position = 'relative';
+            var mask = jQuery('<div class="dpo_dd_mask"></div>').css({height: dropdown.offsetHeight + 'px'});
+            mask[0].dd = dropdown;
+            jQuery(dropdown).after(mask);
+            mask.on('click', function(ev){
+                ev.stopPropagation();
+                if (this.select('.dpo_dd_list_outer')[0]) {
+                    this.select('.dpo_dd_list_outer')[0].remove();
+                    this.dd.removeClassName('open-dd');
+                } else {
+                    $$('.dpo_dd_list_outer').each(function(dd){dd.remove();});
+                    $$('.open-dd').each(function(dd){dd.removeClassName('open-dd');});
+                    this.dd.addClassName('open-dd');
+                    var outer = jQuery('<div class="dpo_dd_list_outer"><input type="text" class="dpo_dd_search" placeholder="'+_obj.getTranslation('Search...')+'" /></div>').css({width: (this.dd.offsetWidth / this.dd.parentNode.offsetWidth) * 100 + '%' }).appendTo(this);
+                    outer.on('click', function(ev){ev.stopPropagation();});
+                    var list = jQuery('<div class="dpo_dd_list"></div>').appendTo(outer);
+                    var listInner = jQuery('<table class="dpo_dd_list_inner"></table>').appendTo(list), _dd = this.dd;
+                    jQuery.each(this.dd.options, function(i, o){
+                        var item = jQuery('<tr class="dpo_dd_list_value '+(o.selected ? 'dpo_dd_list_value_selected' : '')+'"></tr>').appendTo(listInner);
+                        item[0]._index = i;
+                        if (o.disabled) {
+                            item.addClass('disabled');
+                        } else {
+                            item.on('click', function(){
+                                _dd.selectedIndex = this._index;
+                                jQuery(_dd).trigger('change');
+                                fireEvent(_dd, 'change');
+                                this.up('.dpo_dd_mask').click();
+                            });
+                        }
+                        var preview = jQuery('<td class="dpo_dd_list_preview"></td>').appendTo(item);
+                        var label = jQuery('<td class="dpo_dd_list_label"></td>').appendTo(item);
+                        preview.html('<div class="dpo-choice-none"></div>');
+                        if (o.configImg) preview.html('<img src="'+o.configImg+'" alt="preview" />');
+                        if (o.configColor) preview.html('<div style="background:'+o.configColor+'"></div>');
+                        label.text(o.text);
+                    });
+                    if ($$('.dpo_dd_list_value_selected')[0]) list[0].scrollTop = $$('.dpo_dd_list_value_selected')[0].offsetTop - 30;
+                    outer.find('.dpo_dd_search').on('keyup paste', function(){
+                        setTimeout(function(){
+                            jQuery('.nothing-found').remove();
+                            var value = jQuery.trim(this.value).toLowerCase(), found = false;
+                            jQuery('.dpo_dd_list_value').each(function(i, o){
+                                if (!value || jQuery(o).text().toLowerCase().indexOf(value) > -1) {
+                                    jQuery(o).css({display: 'block'});
+                                    found = true;
+                                } else {
+                                    jQuery(o).css({display: 'none'});
+                                }
+                            });
+                            if (!found) jQuery('<div class="nothing-found">'+_obj.getTranslation('Sorry, nothing found...')+'</div>').appendTo('.dpo_dd_list');
+                        }.bind(this), 0);
+                    });
+                }
+            });
         }
         jQuery(dropdown).trigger('change');
     },
@@ -1337,7 +1544,7 @@ window.DynamicProductOptions = {
             elm.setAttribute(attr, attrValue.length ? attrValue : attr);
         }
     },
-    hideDefaultMessages : function() {
+    hideDefaultMessages : function() {return;
         for (var i = 0; i < this.options.length; i++) {
             if (this.options[i].option_field && this.options[i].default_value && parseInt(this.options[i].hide_on_focus) && this.options[i].default_value == this.options[i].option_field.value) {
                 this.options[i].option_field.value = '';
@@ -1388,7 +1595,7 @@ window.DynamicProductOptions = {
     },
     showPopup : function() {
         jQuery('.img_delayed_load').each(function(index, div){
-            jQuery('<img>').attr({src: div.src}).insertAfter(div).on('click', function(){
+            jQuery('<img'+(div.up('.dpo_swatch') ? ' class="itoris-dynamicoptions-thumbnail-image"' : '')+'>').attr({src: div.src}).insertAfter(div).on('click', function(){
                 jQuery(this).parent().find('input')[0].click();
             });
             jQuery(div).remove();
@@ -2071,7 +2278,8 @@ window.DynamicProductOptions = {
         return priceBox ? priceBox : jQuery(this.priceBoxSelector);
     },
     getQtyField: function(){
-        return $$('#qty, #options-' + this.config.product_id)[0];
+        var qtyField = $$('#qty, #options-' + this.config.product_id)[0];
+        return qtyField ? qtyField : {value: 1};
     },
     verifyNumeric: function(value) {
         return (!isNaN(parseFloat(value)) && isFinite(value)) ? value-0 : value;
@@ -2088,8 +2296,13 @@ window.DynamicProductOptions = {
         if (typeof this.config.options_qty.length != 'number') {
             obj.updateAllPrices(); obj.presetOptionsQty(); obj.updateAllPrices();
         }
-        jQuery('#itoris_dynamicproductoptions select option').each(function(index, option){
-            if (option.innerHTML.indexOf('+-') > -1) option.innerHTML = option.innerHTML.replace('+-', '-');
+        jQuery('#itoris_dynamicproductoptions select').each(function(index, select){
+            if (select.config && select.config.items) select.config.items.each(function(option){
+                if (option.elm.innerHTML.indexOf('+-') > -1) option.elm.innerHTML = option.elm.innerHTML.replace('+-', '-');
+                if (option.sku_is_product_id && !option.is_salable && option.elm.innerHTML.indexOf(obj.config.out_of_stock_message) == -1) {
+                    option.elm.innerHTML += ' (' + obj.config.out_of_stock_message + ')';
+                }
+            });
         });
         if (jQuery('#qty').val() > 1) jQuery('#qty').trigger('change');
     }

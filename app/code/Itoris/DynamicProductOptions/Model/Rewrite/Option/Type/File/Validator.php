@@ -32,7 +32,7 @@ class Validator extends \Magento\Catalog\Model\Product\Option\Type\File\Validato
         if (count($result) != count($errors)) {
             foreach ($errors as $errorCode) {
                 if ($errorCode == \Zend_Validate_File_ImageSize::NOT_DETECTED) {
-                    $result[] = __("The size of image '%s' could not be detected", $fileInfo['title']);
+                    $result[] = __("The size of image '%1' could not be detected", $fileInfo['title']);
                 }
             }
         }

@@ -39,9 +39,9 @@ class Save extends \Itoris\DynamicProductOptions\Controller\Adminhtml\Product\Op
             $id = $_id = (int)$this->getRequest()->getParam('id');
             $storeId = (int)$this->getRequest()->getParam('store');
             $useGlobal = !!$this->getRequest()->getParam('idpo_use_global');
+            $res = $this->_objectManager->get('Magento\Framework\App\ResourceConnection');
+            $con = $res->getConnection('write');
             if ($storeId) {
-                $res = $this->_objectManager->get('Magento\Framework\App\ResourceConnection');
-                $con = $res->getConnection('read');
                 $id = (int) $con->fetchOne("select `template_id` from {$res->getTableName('itoris_dynamicproductoptions_template')} where `store_id`={$storeId} and `parent_id`={$id}");
             }            
             if ($id) $template->load($id);
@@ -54,6 +54,8 @@ class Save extends \Itoris\DynamicProductOptions\Controller\Adminhtml\Product\Op
                 if ($storeId) {
                     $con->query("update {$res->getTableName('itoris_dynamicproductoptions_template')} set `parent_id`={$_id} where `template_id`={$template->getId()}");
                     if ($useGlobal) $template->delete();
+                } else if ($_id > 0) {
+                    $con->query("update {$res->getTableName('itoris_dynamicproductoptions_template')} set `name`=".$con->quote($data['name'])." where `parent_id`={$_id}");
                 }
                 $this->messageManager->addSuccess(__('Template has been saved'));
             } else {
@@ -86,7 +88,7 @@ class Save extends \Itoris\DynamicProductOptions\Controller\Adminhtml\Product\Op
         $con = $res->getConnection('write');
         $defaultConfig = $con->fetchOne("select `configuration` from {$res->getTableName('itoris_dynamicproductoptions_template')} where `template_id`={$id}");
         $defaultConfig = (array)json_decode($defaultConfig, true);
-        
+    
         $needsUpdate = false;
         foreach($defaultConfig as $sectionId => $section) {
             if (!isset($section['fields'])) continue;
@@ -164,6 +166,7 @@ class Save extends \Itoris\DynamicProductOptions\Controller\Adminhtml\Product\Op
                     }
                     foreach($storeFields[$index]['items'] as $key => $item) {
                         if (!is_array($item)) continue;
+                        if (!isset($item['internal_id'])) $item['internal_id'] = $key;
                         $item['tmp_index'] = $key;
                         $storeFieldValues[$item['internal_id']] = $item;
                     }
@@ -200,11 +203,20 @@ class Save extends \Itoris\DynamicProductOptions\Controller\Adminhtml\Product\Op
             
             //if field removed from default config we have to remove it from the store config as well
             foreach($storeFields as $index => $field) {
-                if (!isset($defaultFields[$index])) {
+                if (!isset($defaultFields[$index]) && !in_array($field['type'], ['html', 'image'])) {
                     $sectionId = $field['tmp_position']['section'];
                     $positionId = $field['tmp_position']['position'];
                     unset($storeConfig[$sectionId]['fields'][$positionId]);
                 }
+            }
+            
+            //normalizing array for json
+            foreach($storeConfig as $sectionId => $section) {
+                if (!isset($section['fields'])) continue;
+                for($i=0; $i<max(array_keys($section['fields'])); $i++) {
+                    if (!isset($section['fields'][$i])) $storeConfig[$sectionId]['fields'][$i] = null;
+                }                
+                ksort($storeConfig[$sectionId]['fields']);
             }
             
             $con->exec("update {$res->getTableName('itoris_dynamicproductoptions_template')} set `configuration` = ".$con->quote(json_encode($storeConfig))." where `template_id`={$_storeConfig['template_id']}");

@@ -41,7 +41,7 @@ class Condition extends \Magento\Framework\App\Helper\AbstractHelper
     protected function _isConditionCorrect($condition) {
         $isCorrect = true;
         if ($condition['type'] == 'field') {
-            return $this->isCorrect($condition['value'], $condition['condition'], $this->getOptionValue($condition['field']));
+            return $this->isCorrect((string)__($condition['value']), $condition['condition'], $this->getOptionValue($condition['field']));
         } else {
             for ($i = 0; $i < count($condition['conditions']); $i++) {
                 if ($this->_isConditionCorrect($condition['conditions'][$i])) {

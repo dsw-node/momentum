@@ -118,6 +118,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
                     [
                         'caption'   => $this->escapeHtml(__('Delete')),
                         'url'       => ['base'=> '*/*/delete'],
+                        'confirm' => __('Are you sure you want to delete the template?'),
                         'field'     => 'id'
                     ]
                 ],

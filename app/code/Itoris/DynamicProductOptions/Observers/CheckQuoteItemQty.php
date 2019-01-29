@@ -38,6 +38,8 @@ class CheckQuoteItemQty implements ObserverInterface
      * @var \Magento\Framework\App\RequestInterface|null
      */
     protected $_request = null;
+    protected $_stockInfo = [];
+    protected $_stockItems = [];
 
     public function __construct(
         \Magento\Framework\App\RequestInterface $request,
@@ -46,7 +48,7 @@ class CheckQuoteItemQty implements ObserverInterface
         $this->_objectManager = $objectManager;
         $this->_request = $request;
         try {
-            $this->isEnabledFlag = $this->_objectManager->create('Itoris\DynamicProductOptions\Helper\Data')->getSettings(true)->getEnabled();
+            $this->isEnabledFlag = $this->_objectManager->get('Itoris\DynamicProductOptions\Helper\Data')->getSettings(true)->getEnabled();
         } catch (\Exception $e) {/** save store model */}
     }
 
@@ -103,13 +105,7 @@ class CheckQuoteItemQty implements ObserverInterface
                     if ($valueConfiguration) {
                         $valueConfiguration = \Zend_Json::decode($valueConfiguration);
                         if (isset($valueConfiguration['sku_is_product_id']) && $valueConfiguration['sku_is_product_id']) {
-                            /** @var  $valueModel \Magento\Catalog\Model\Product\Option\Value*/
-                            //$valueModel = $this->_objectManager->create('Magento\Catalog\Model\Product\Option\Value')->load($optionValueId);
-                            /** @var $valueProduct \Magento\Catalog\Model\Product */
-                            $valueProduct = $this->_objectManager->create('Magento\Catalog\Model\Product')->load((int)$valueConfiguration['sku']);
-                            /* @var $stockItem \Magento\CatalogInventory\Model\Stock\Item */
-                            $stockItem = $this->_objectManager->create('Magento\CatalogInventory\Model\Stock\Item')->load($valueProduct->getId(), 'product_id');
-
+                            
                             $buyRequest = $quoteItem->getBuyRequest();
                             $optionsQty = $buyRequest->getOptionsQty();
                             $optionQty = 1;
@@ -124,12 +120,20 @@ class CheckQuoteItemQty implements ObserverInterface
                                     }
                                 }
                             }
+                            
+                            $productId = (int)$valueConfiguration['sku']; $quoteItemId = $quoteItem->getId();
+                            if (!isset($this->_stockItems[$productId])) {
+                                $this->_stockItems[$productId] = $this->_objectManager->create('Magento\CatalogInventory\Model\Stock\Item')->load($productId, 'product_id');
+                            }
+                            if (!isset($this->_stockInfo[$productId])) $this->_stockInfo[$productId] = [];
+                            $this->_stockInfo[$productId][$quoteItemId] = $optionQty * $qty;
 
-                            if ($stockItem->getManageStock() && (!$stockItem->getIsInStock() || (int)$stockItem->getQty() < $qty * $optionQty)) {
+                            if ($this->_stockItems[$productId]->getManageStock() &&
+                                    (!$this->_stockItems[$productId]->getIsInStock() || $this->_stockItems[$productId]->getQty() < array_sum($this->_stockInfo[$productId]))) {
                                 $quoteItem->addErrorInfo(
                                     'cataloginventory',
                                     \Magento\CatalogInventory\Helper\Data::ERROR_QTY,
-                                    __('This product is out of stock.')
+                                    __('We do not have enough quantity for %1 ', $valueConfiguration['title'])
                                 );
                                 $quoteItem->getQuote()->addErrorInfo(
                                     'stock',

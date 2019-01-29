@@ -128,9 +128,26 @@ define([
         },
         createSections : function(sections, isStyleChanged) {
             if (sections.length) {
+				var optionTypes = [];
                 sections.each(function(section){
                     if (section !== null && section.fields) section.fields.each(function(field){
-                        if (field !== null && field.visibility == 'visible' && !field.visibility_action) field.visibility_action = 'hidden';
+                        if (field !== null) {
+							if (field.visibility == 'visible' && !field.visibility_action) field.visibility_action = 'hidden';
+							if (field.items) {
+								for (var i=field.items.length - 1; i >= 0; i--){
+									if (field.items[i] !== null) {
+										if (field.items[i].option_id && field.option_id != field.items[i].option_id) {
+											field.items.splice(i, 1);
+										} else if (field.items[i].option_type_id && optionTypes[field.items[i].option_type_id]) {
+											delete field.items[i].option_type_id;
+											delete field.items[i].option_id;
+										} else if (field.items[i].option_type_id) {
+											optionTypes[field.items[i].option_type_id] = 1;
+										}
+									}									
+								}
+							}
+						}
                     });
                 });
                 if (this.getFormStyle() == 'table_sections') {
@@ -225,7 +242,11 @@ define([
                 sectionBlock.addClassName('dpo_from_template');
                 var comment = new Element('span');
                 comment.addClassName('section_template_comment');
-                comment.innerHTML = 'This section is not editable and is inherited from template with ID: '+section.template_id+'. <a style="color:#fff;text-decoration:underline;" target="_blank" href="'+window.dpoDefaultTemplateURL.replace('/id/9999999/', '/id/'+section.template_id+'/')+'">Go to template</a>';
+                var templateName = '';
+                $$('#itoris-dynamicproductoptions-templates-dropdown-load option').each(function(o){
+                    if (!templateName && o.value - 0 == section.template_id - 0) templateName = o.innerText;
+                });
+                comment.innerHTML = 'This section is not editable and is inherited from template "'+templateName+'" (ID: '+section.template_id+'). <a style="color:#fff;text-decoration:underline;" target="_blank" href="'+window.dpoDefaultTemplateURL.replace('/id/9999999/', '/id/'+section.template_id+'/')+'">Go to template</a>';
                 sectionBlock.select('table')[0].insert({before: comment});
                 sectionBlock.select('td').each(function(item){item.addClassName('readonly-cell')});
             }
@@ -304,7 +325,7 @@ define([
                 'id', 'option_id', 'is_delete', 'previous_type', 'previous_group', 'itoris_option_id', 'itoris_is_delete',
                 'internal_id', 'visibility_condition', 'visibility_action', 'visibility', 'customer_group',
                 'title', 'type', 'is_require', 'sort_order', 'price', 'price_type', 'sku', 'max_characters', 'file_extension',
-                'image_size_x', 'image_size_y', 'validation', 'default_value', 'hide_on_focus', 'comment', 'css_class', 'html_args',
+                'image_size_x', 'image_size_y', 'validation', 'default_value', 'hide_on_focus', 'comment', 'css_class', 'html_args', 'tooltip', 'swatchhtml',
                 'img_src', 'img_alt', 'img_title', 'static_text', 'order', 'section_order','default_select_title', 'tier_price', 'weight'
             ];
             var systemParams = ['id', 'option_id', 'is_delete', 'previous_type', 'previous_group',
@@ -348,7 +369,7 @@ define([
             }
             if (field.items) {
                 var itemsParams = [
-                    'title', 'price', 'price_type', 'sku', 'image_src', 'color', 'swatch', 'use_qty', 'is_selected', 'is_disabled', 'carriage_return','sort_order',
+                    'title', 'price', 'price_type', 'onetime', 'sku', 'image_src', 'color', 'swatch', 'use_qty', 'is_selected', 'is_disabled', 'carriage_return','sort_order',
                     'css_class', 'order','option_type_id', 'is_delete', 'visibility_condition', 'visibility_action', 'visibility', 'customer_group',
                     'sku_is_product_id', 'tier_price', 'weight'
                 ];
@@ -450,12 +471,12 @@ define([
             var element = this.createElement('input');
             element.type = 'hidden';
             element.id = elementId;
-            var elmName = 'product[options][' + optionId + ']';
+            /*var elmName = 'product[options][' + optionId + ']';
             if (isValues) {
                 elmName += '[values][' + valueId + ']';
             }
-            element.name = elmName + '[' + paramCode + ']';
-            this.configBox.appendChild(element);
+            element.name = elmName + '[' + paramCode + ']';*/
+            //this.configBox.appendChild(element);
             return element;
         },
         changeSectionsStyle : function() {
@@ -773,7 +794,7 @@ define([
             }
         },
         createSectionFieldsTable : function(section) {
-            var fieldsTable = this.createElement('table');
+            var fieldsTable = this.createElement('table'), _this = this;
             var row = null;
             var col = null;
             var box = null;
@@ -791,10 +812,17 @@ define([
                     num = (i-1) * section.cols + j;
                     var editButton = this.createElement('div', 'edit-button');
                     editButton.hide();
-
+                    editButton._data = {order: section.order, num: num, col: col};
+                    
                     var reorderBox = null;
                     Event.observe(editButton, 'mouseover', this.showElm.bind(this, editButton));
-                    Event.observe(editButton, 'mousedown', this.editField.bind(this, section.order, num, col));
+                    Event.observe(editButton, 'mousedown', function(ev){
+                        ev.stopPropagation();
+                        jQuery('body').trigger('processStart');
+                        var _elm = this;
+                        setTimeout(function(){_this.editField(_elm._data.order, _elm._data.num, _elm._data.col);}, 100);
+                    });
+                    //Event.observe(editButton, 'mousedown', this.editField.bind(this, section.order, num, col));
                     if (section.fields && section.fields[num]) {
                         fieldBlock = this.createField(section.fields[num], section.order, col);
                         fieldBlock.insert({top : editButton});
@@ -927,10 +955,9 @@ define([
             this.loadFieldTemplate();
             this.prepareFieldConfig(sectionOrder, this.tempFieldConfig);
             this.createFiledConfigButtons(sectionOrder, this.tempFieldConfig, ceil, fieldOrder);
-            if (fieldConfig.type == 'html') {
-                $$('.popup-window .dynamicoptions-static_text')[0].id = "dpo_abstract_wysiwyg";
-            }
+            if ($$('.popup-window .dynamicoptions-static_text')[0] && fieldConfig && fieldConfig.type == 'html') $$('.popup-window .dynamicoptions-static_text')[0].id = "dpo_abstract_wysiwyg";
 			this.updatePopupPosition();
+            jQuery('body').trigger('processStop');
         },
 		updatePopupPosition: function() {
 			var t = jQuery(window).scrollTop() + (jQuery(window).height() - jQuery(this.popup.window).height()) / 2;
@@ -948,7 +975,7 @@ define([
         createFiledConfigButtons : function(sectionOrder, fieldConfig, ceil, fieldOrder) {
             var box = this.popup.buttons;
             box.update();
-            if (fieldConfig) {
+            if (fieldConfig && this.sections[sectionOrder]['fields'][fieldOrder]) {
                 var removeButton = this.createButton(this.translates.remove, 'float-right'), isAllowDelete = "image,html".indexOf(fieldConfig.type) > -1 || this.config.store_id == 0;
                 if (isAllowDelete) removeButton.removeClassName('disabled'); else removeButton.addClassName('disabled');
                 removeButton.disabled = !isAllowDelete;
@@ -1276,6 +1303,7 @@ define([
         },
         createItemsOptions : function(config) {
             this.popup.config.select('.dynamicoptions-values-table tfoot tr.template')[0].hide();
+            this.popup.config.setAttribute('field-type', config.type);
             if (config && !config.items) {
                 config.items = [];
             }
@@ -1311,7 +1339,11 @@ define([
             this.popup.config.select('.dynamicoptions-values-table thead tr')[0].show();
             this.tempFieldConfig.items.push(config);
             var row = this.createElement('tr');
-            row.update(this.popup.config.select('.dynamicoptions-values-table tfoot tr.template')[0].innerHTML);
+            //row.update(this.popup.config.select('.dynamicoptions-values-table tfoot tr.template')[0].innerHTML);
+            if (!this.valuesTableTemplateHtml) {
+                this.valuesTableTemplateHtml = this.popup.config.select('.dynamicoptions-values-table tfoot tr.template')[0].innerHTML;
+            }
+            row.innerHTML = this.valuesTableTemplateHtml;
             if (parentBlock) {
                 parentBlock.appendChild(row);
             }
@@ -1322,8 +1354,11 @@ define([
             this.prepareItemCheckCol(row, config, 'swatch', true);
             this.prepareItemFieldCol(row, config, 'price', false, true);
             this.prepareItemDropdownCol(row, config, 'price_type', false);
+            this.prepareItemCheckCol(row, config, 'onetime', true);
             this.prepareItemFieldCol(row, config, 'sku', false, false);
             this.prepareProductLinkAction(row, config);
+            this.prepareTooltip(row, config);
+            this.prepareSwatchHtml(row, config);
             this.toggleWeightField(row, config);
             this.prepareTierAction(row, config);
 
@@ -1377,6 +1412,18 @@ define([
                 if (pinLinkTitleElm) pinLinkTitleElm.observe('click', this.pinItemTitleProductId.bind(this, row, config));
             }
             this.updateItemSkuField(row, config);
+        },
+        prepareTooltip: function(row, config) {
+            var addTooltipElm = row.select('.edit-value-tooltip')[0];
+            var hasTooltip = row.select('.dynamicoptions-has-tooltip')[0];
+            hasTooltip.update(config.tooltip ? '&#10004;' : '');
+            addTooltipElm.observe('click', this.showTooltip.bind(this, row, config, addTooltipElm));
+        },
+        prepareSwatchHtml: function(row, config) {
+            var addSwatchHtmlElm = row.select('.edit-value-swatchhtml')[0];
+            var hasSwatchHtml = row.select('.dynamicoptions-has-swatchhtml')[0];
+            hasSwatchHtml.update(config.swatchhtml ? '&#10004;' : '');
+            addSwatchHtmlElm.observe('click', this.showSwatchHtml.bind(this, row, config, addSwatchHtmlElm));
         },
         toggleWeightField: function(row, config){return; //weight should always be editable
             var weightElm = row.select('.dynamicoptions-value-weight')[0];
@@ -1470,25 +1517,16 @@ define([
             this.toggleWeightField(row, config);
         },
         prepareConditionIcon : function(conditionIcon, config, updateElm, onlyUpdateEm, openPopup) {
-            var conditionObj = new ItorisDynamicOptionsCondition((config.visibility_condition ? config.visibility_condition.evalJSON() : null) || {type: 'all',	value: 1,conditions: []}, Math.random());
+            var conditionObj = new ItorisDynamicOptionsCondition((config.visibility_condition ? config.visibility_condition.evalJSON() : null) || {type: 'all',	value: 1,conditions: []}, Math.random(), this, config, updateElm);
             this.conditionsObj.push(conditionObj);
-            var offsets = conditionIcon.cumulativeOffset();
-            conditionObj.setPopupPosition(offsets.top, offsets.left);
-            var applyButton = this.createButton('Apply', 'save');
-            Event.observe(applyButton, 'click', this.saveCondition.bind(this, config, conditionObj, updateElm));
-            var cancelButton = this.createButton('Cancel', 'delete');
-            Event.observe(cancelButton, 'click', function(){conditionObj.closePopup();}.bind(this));
-            conditionObj.popup.appendChild(applyButton);
-            conditionObj.popup.appendChild(cancelButton);
-            conditionObj.applyButton = applyButton;
-            conditionObj.cancelButton = cancelButton;
+            //var offsets = conditionIcon.cumulativeOffset();
+            //conditionObj.setPopupPosition(offsets.top, offsets.left);
+            if (updateElm.hasClassName('dynamicoptions-visibility_condition')) conditionObj.postInitPopup();
             if (updateElm) {
                 updateElm.value = conditionObj.convertConditionToStr(conditionObj.conditions);
                 updateElm.observe('change', this.updateConditions.bind(this, config, updateElm, conditionObj));
             }
-            if (onlyUpdateEm) {
-                return;
-            }
+            if (onlyUpdateEm) return;
             if (openPopup) {
                 this.closeAdditionalPopups();
                 var offsets = conditionIcon.cumulativeOffset();
@@ -1496,6 +1534,7 @@ define([
                 conditionObj.openPopup();
             } else {
                 Event.observe(conditionIcon, 'click', function(){
+                    conditionObj.postInitPopup();
                     this.closeAdditionalPopups();
                     var offsets = conditionIcon.cumulativeOffset();
                     conditionObj.setPopupPosition(offsets.top, offsets.left);
@@ -1619,7 +1658,7 @@ define([
                 }
             }
 
-            for (var i = 0; i < itemsByOrder.length; i++) {
+            for (var i = 0, o = 1; i < itemsByOrder.length; i++) {
                 if (itemsByOrder[i]) {
                     if (minOrder == itemsByOrder[i].order) {
                         itemsByOrder[i].row.select('.sort-arrow-up')[0].hide();
@@ -1631,7 +1670,9 @@ define([
                     } else {
                         itemsByOrder[i].row.select('.sort-arrow-down')[0].show();
                     }
-                    itemsByOrder[i].row.select('.dynamicoptions-value-order')[0].value = itemsByOrder[i].order;
+                    itemsByOrder[i].row.select('.dynamicoptions-value-order')[0].value = o;//itemsByOrder[i].order;
+                    itemsByOrder[i].order = itemsByOrder[i].sort_order = o;
+                    o++;
                 }
             }
         },
@@ -1670,7 +1711,7 @@ define([
             }
             return false;
         },
-        uncheckItems : function(allowElm) {
+        uncheckItems : function(allowElm) {return; //allow multiple selection
             for (var i = 0; i < this.tempFieldConfig.items.length; i++) {
                 if (typeof this.tempFieldConfig.items[i] != 'undefined') {
                     this.tempFieldConfig.items[i]['is_selected'] = 0;
@@ -1791,7 +1832,7 @@ define([
         createThumbnail : function(src, valueElm, code, config) {
             var block = valueElm.up(), baseImg = block.select('.dynamicoptions-value-base_img')[0];
             block.select('img').each(function(elm){elm.remove();});
-            block.addClassName('no-color');
+            //block.addClassName('no-color');
             if (baseImg) {
                 baseImg.checked = config.base_img ? true : false;
                 Event.observe(baseImg, 'click', function(){config.base_img = baseImg.checked});
@@ -1852,6 +1893,7 @@ define([
                         this.usedFieldInternalIds.push(parseInt(config.internal_id));
                     }
                 }
+                this.popup.window.setAttribute('field-type', config.type);
                 /*if (config.type == 'html' || config.type == 'image' || config.type == 'file') {
                  this.popup.addClassName('')
                  } else */
@@ -1962,6 +2004,12 @@ define([
                 this.showCustomerGroupsPopup(customerGroupsSelect, config, textElm, true);
                 this.applyCustomerGroupsPopup(config);
             }
+            var tooltip = this.popup.config.select('.edit-tooltip')[0];
+            if (tooltip) {
+                var hasTooltip = tooltip.up().select('.dynamicoptions-has-tooltip')[0];
+                hasTooltip.update(config.tooltip ? '&#10004;' : '');
+                Event.observe(tooltip, 'click', this.showTooltip.bind(this, tooltip.up(), config, tooltip));
+            }
         },
         removeFieldCol : function(code) {
             var cols = this.popup.config.select('.td-dynamicoptions-' + code);
@@ -2016,6 +2064,7 @@ define([
             conditionObj.closePopup();
         },
         updateConditions : function(config, elm, conditionObj) {
+            if (!conditionObj.popup) conditionObj.postInitPopup();
             var conditions = conditionObj.convertStrToConditionObj(elm.value)
             if (conditions) {
                 this.block.appendChild(conditionObj.applyButton);
@@ -2046,7 +2095,7 @@ define([
         },
         createSelectBoxOptions : function(config) {
             this.removeOptionsRows('values');
-            this.popup.config.select('.dynamicoptions-values-table th.only-radio, .dynamicoptions-values-table td.only-radio').each(function(elm){elm.remove();});
+            //this.popup.config.select('.dynamicoptions-values-table th.only-radio, .dynamicoptions-values-table td.only-radio').each(function(elm){elm.remove();});
             if (config.type == 'multiple') {
                 this.popup.config.select('.dynamicoptions-values-table th.not-multiple-dropdown, .dynamicoptions-values-table td.not-multiple-dropdown').each(function(elm){elm.remove();});
             }
@@ -2101,12 +2150,12 @@ define([
         showCustomerGroupsPopup : function(elm, config, textElm, thisnotclick) {
             this.closeAdditionalPopups();
             var popup = this.getCustomerGroupsPopup();
-            var offset = elm.cumulativeOffset();
             var isOpera = !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
             var isChrome = !!window.chrome && !isOpera;
             if (isChrome && thisnotclick) {
 
-            } else {
+            } else if (!thisnotclick) {
+                var offset = elm.cumulativeOffset();
                 popup.setStyle({
                     top: offset.top + 'px',
                     left: offset.left + 'px'
@@ -2294,7 +2343,7 @@ define([
                 selectContainer.appendChild(selectOption);
                 selectOption.update(field.default_select_title || this.config.translates.please_select);
                 for (var i = 0; i < field.items.length; i++) {
-                    if (field.items[i]) {
+                    if (field.items[i] && parseInt(field.items[i].is_selected)) {
                         selectOption = this.createElement('option');
                         selectContainer.appendChild(selectOption);
                         selectOption.update(field.items[i].title);
@@ -2460,7 +2509,7 @@ define([
          */
         createPopup : function() {
             var background = this.createElement('div', 'popup-background');
-            Event.observe(background, 'click', this.hidePopup.bind(this));
+            //Event.observe(background, 'click', this.hidePopup.bind(this));
             var popupWindow = this.createElement('div', 'popup-window');
             this.block.appendChild(background);
             this.block.appendChild(popupWindow);
@@ -2692,9 +2741,10 @@ define([
             this.emptyCeils = [];
             for (var i = 0; i < ceils.length; i++) {
                 if (ceils[i].hasClassName('readonly-cell')) continue;
+                var offset = ceils[i].cumulativeOffset();
                 this.emptyCeils.push({
-                    x             : ceils[i].cumulativeOffset().left,//ceils[i].positionedOffset().left,
-                    y             : ceils[i].cumulativeOffset().top,//ceils[i].positionedOffset().top,
+                    x             : offset.left,//ceils[i].positionedOffset().left,
+                    y             : offset.top,//ceils[i].positionedOffset().top,
                     width         : ceils[i].getWidth(),
                     height        : ceils[i].getHeight(),
                     section_order : ceils[i].section,
@@ -2766,6 +2816,51 @@ define([
         },
         hideProductsGridPopup: function() {
             $('itoris_dynamicoptions_products_grid_popup').hide();
+        },
+        showTooltip: function(row, config, addTooltipElm) {
+            var tooltipPopup = jQuery('<div class="dpoToolTipPopup"><div class="label">Tooltip HTML</div><div>'), _this = this;
+            jQuery(addTooltipElm).before(tooltipPopup);
+            var toggleBtn = jQuery(jQuery('.togglWysiwyg')[0]).clone(true).appendTo(tooltipPopup);
+            var textarea = jQuery('<textarea id="dpo_abstract_wysiwyg" rows="10"></textarea>').appendTo(tooltipPopup);
+            textarea.val(config.tooltip ? config.tooltip : '');
+            var apply = jQuery('<input type="button" value="Apply" class="apply_btn" />').appendTo(tooltipPopup);
+            var cancel = jQuery('<input type="button" value="Cancel" class="cancel_btn" />').appendTo(tooltipPopup);
+            cancel.on('click', function(){_this.hideTooltip(tooltipPopup, row, config, false);});
+            apply.on('click', function(){_this.hideTooltip(tooltipPopup, row, config, true);});
+            
+        },
+        hideTooltip: function(tooltipPopup, row, config, save){
+            if ($('dpo_abstract_wysiwyg_parent')) $('toggledpo_abstract_wysiwyg').click();
+            if (save && $('dpo_abstract_wysiwyg')) {
+                config.tooltip = $('dpo_abstract_wysiwyg').value;
+                if (!config.tooltip) delete config.tooltip;
+                var hasTooltip = row.select('.dynamicoptions-has-tooltip')[0];
+                hasTooltip.update(config.tooltip ? '&#10004;' : '');
+            }
+            tooltipPopup.remove();
+        },
+        showSwatchHtml: function(row, config, addSwatchHtmlElm) {
+            var swatchHtmlPopup = jQuery('<div class="dpoSwatchHtmlPopup"><div class="label">Swatch HTML Design</div><div>'), _this = this;
+            jQuery(addSwatchHtmlElm).before(swatchHtmlPopup);
+            var toggleBtn = jQuery(jQuery('.togglWysiwyg')[0]).clone(true).appendTo(swatchHtmlPopup);
+            toggleBtn.after('<i style="margin-left:20px">FYI: You can use variables {title}, {price}, and {tooltip}</i>');
+            var textarea = jQuery('<textarea id="dpo_abstract_wysiwyg" rows="10"></textarea>').appendTo(swatchHtmlPopup);
+            textarea.val(config.swatchhtml ? config.swatchhtml : '');
+            var apply = jQuery('<input type="button" value="Apply" class="apply_btn" />').appendTo(swatchHtmlPopup);
+            var cancel = jQuery('<input type="button" value="Cancel" class="cancel_btn" />').appendTo(swatchHtmlPopup);
+            cancel.on('click', function(){_this.hideSwatchHtml(swatchHtmlPopup, row, config, false);});
+            apply.on('click', function(){_this.hideSwatchHtml(swatchHtmlPopup, row, config, true);});
+            
+        },
+        hideSwatchHtml: function(swatchHtmlPopup, row, config, save){
+            if ($('dpo_abstract_wysiwyg_parent')) $('toggledpo_abstract_wysiwyg').click();
+            if (save && $('dpo_abstract_wysiwyg')) {
+                config.swatchhtml = $('dpo_abstract_wysiwyg').value;
+                if (!config.swatchhtml) delete config.swatchhtml;
+                var hasSwatchHtml = row.select('.dynamicoptions-has-swatchhtml')[0];
+                hasSwatchHtml.update(config.swatchhtml ? '&#10004;' : '');
+            }
+            swatchHtmlPopup.remove();
         },
         showTierPopup: function(row, config) {
             window.dpo_tier_price_popup = window.dpo_tier_price_popup ? window.dpo_tier_price_popup : $('itoris_dynamicoptions_tier_popup');
@@ -2990,6 +3085,8 @@ define([
                             template_id : this.loadTemplatesDropdown.value,
                             method : this.loadTemplatesDropdownMethod.value,
                             sections: JSON.stringify(itorisDynamicOptions.sections),
+                            css_adjustments: $('itoris-dynamicproductoptions-css-adjustments').value,
+                            extra_js: $('itoris-dynamicproductoptions-extra-js').value,
                             form_key    : FORM_KEY
                         },
                         onComplete : function(res) {
@@ -3032,30 +3129,51 @@ define([
 
     ItorisDynamicOptionsCondition = Class.create();
     ItorisDynamicOptionsCondition.prototype = {
-        initialize : function(conditions, newId) {
-            this.popup = $('itoris-dynamicproductoptions-conditions-popup').cloneNode(true);
-            this.popup.id = newId;
-            $$('body')[0].appendChild(this.popup);
-            this.optionsIds = [];
-            this.toggleElements = {
-                toHide : null,
-                toShow : null
-            };
+        initialize : function(conditions, newId, dpoObj, config, updateElm) {
+            this.dpoObj = dpoObj;
             this.conditions = conditions;
-            this.updateFieldOptions();
-            this.initConditions();
-            document.observe('click', this.hideOpenedConditionElement.bind(this));
+            this.newId = newId;
+            this.config = config;
+            this.updateElm = updateElm;
+        },
+        postInitPopup: function(){
+            if (!this.popup) {
+                var _this = this;
+                this.popup = $('itoris-dynamicproductoptions-conditions-popup').cloneNode(true);
+                this.popup.id = this.newId;
+                $$('body')[0].appendChild(this.popup);
+                this.optionsIds = [];
+                this.toggleElements = {
+                    toHide : null,
+                    toShow : null
+                };
+                this.updateFieldOptions();
+                this.initConditions();
+                document.observe('click', this.hideOpenedConditionElement.bind(this));
+                
+                var applyButton = this.dpoObj.createButton('Apply', 'save');
+                Event.observe(applyButton, 'click', this.dpoObj.saveCondition.bind(this.dpoObj, _this.config, _this, _this.updateElm));
+                var cancelButton = this.dpoObj.createButton('Cancel', 'delete');
+                Event.observe(cancelButton, 'click', function(){_this.closePopup();}.bind(this.dpoObj));
+                this.popup.appendChild(applyButton);
+                this.popup.appendChild(cancelButton);
+                this.applyButton = applyButton;
+                this.cancelButton = cancelButton;
+            }
         },
         setPopupPosition : function(top, left) {
+            if (!this.popup) return;
             this.popup.setStyle({
                 top: top + 'px',
                 left: (left - this.popup.getWidth()) + 'px'
             });
         },
         openPopup : function() {
+            if (!this.popup) return;
             this.popup.show();
         },
         closePopup : function() {
+            if (!this.popup) return;
             this.popup.hide();
         },
         hideOpenedConditionElement : function(e) {
@@ -3101,7 +3219,7 @@ define([
             } else {
                 optGroup.hide();
             }
-            $$('.dynamicoptions-visibility, .dynamicoptions-price_type, .dynamicoptions-validation, .dynamicoptions-value-visibility, .dynamicoptions-value-visibility_action').each(function(select){
+            /*$$('.dynamicoptions-visibility, .dynamicoptions-price_type, .dynamicoptions-validation, .dynamicoptions-value-visibility, .dynamicoptions-value-visibility_action').each(function(select){
                 if(select.selectedIndex == -1){
                     select.selectedIndex = 0;
                 }
@@ -3110,7 +3228,7 @@ define([
                 if(select.selectedIndex == -1){
                     select.selectedIndex = 1;
                 }
-            });
+            });*/
         },
         initConditions : function() {
             this.popup.update();

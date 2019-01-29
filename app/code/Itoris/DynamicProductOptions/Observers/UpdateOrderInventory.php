@@ -50,7 +50,7 @@ class UpdateOrderInventory implements ObserverInterface
         $this->_objectManager = $objectManager;
         $this->_request = $request;
         try {
-            $this->isEnabledFlag = $this->_objectManager->create('Itoris\DynamicProductOptions\Helper\Data')->getSettings(true)->getEnabled();
+            $this->isEnabledFlag = $this->_objectManager->get('Itoris\DynamicProductOptions\Helper\Data')->getSettings(true)->getEnabled();
         } catch (\Exception $e) {/** save store model */}
     }
 
@@ -114,7 +114,7 @@ class UpdateOrderInventory implements ObserverInterface
                                             if ($eventName == 'order_cancel_after') {
                                                 $item->setQty($item->getQty() + $qty * $optionQty);
                                             } else if ($eventName == 'sales_order_creditmemo_refund') {
-                                                $qtyToRefund = intval($post['creditmemo']['items'][$orderItem->getId()]['qty']);
+                                                $qtyToRefund = intval(@$post['creditmemo']['items'][$orderItem->getId()]['qty']);
                                                 if ($qtyToRefund > 0) $item->setQty($item->getQty() + $qtyToRefund * $optionQty);
                                             } else {
                                                 $item->setQty($item->getQty() - $qty * $optionQty);

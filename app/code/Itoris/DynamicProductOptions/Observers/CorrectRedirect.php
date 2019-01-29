@@ -43,7 +43,7 @@ class CorrectRedirect implements ObserverInterface
     public function execute(\Magento\Framework\Event\Observer $observer) {
 
         if ($this->_objectManager->get('Magento\Backend\Model\Session')->getDynamicOptionsErrors()) {
-            $refererUrl = $this->_objectManager->create('Itoris\DynamicProductOptions\Helper\Data')->getRefererUrl();
+            $refererUrl = $this->_objectManager->get('Itoris\DynamicProductOptions\Helper\Data')->getRefererUrl();
             if ($refererUrl) {
                 $this->_objectManager->get('Magento\Framework\App\ResponseInterface')->setRedirect($refererUrl);
             }

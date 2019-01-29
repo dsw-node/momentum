@@ -177,6 +177,20 @@ class MassLoad extends \Itoris\DynamicProductOptions\Controller\Adminhtml\Produc
                                                 $field['visibility_condition'] = json_encode($_condition);
                                             }
                                         }
+										if (isset($field['items']) && is_array($field['items'])) {
+											foreach($field['items'] as &$item) {
+												if (!is_array($item)) continue;
+												if (isset($item['visibility_condition']) && $item['visibility_condition']) {
+													$_condition = json_decode($item['visibility_condition'], true);
+													if ($_condition && isset($_condition['conditions']) && is_array($_condition['conditions'])) {
+														foreach($_condition['conditions'] as $key => $condition) {
+															if (isset($_condition['conditions'][$key]['field'])) $_condition['conditions'][$key]['field'] += $maxInternalId;
+														}
+														$item['visibility_condition'] = json_encode($_condition);
+													}
+												}
+											}
+										}
                                     }
                                     if (isset($section['visibility_condition']) && $section['visibility_condition']) {
                                         $_condition = json_decode($section['visibility_condition'], true);
@@ -200,7 +214,11 @@ class MassLoad extends \Itoris\DynamicProductOptions\Controller\Adminhtml\Produc
                                 $template->setData('absolute_sku', $config['absolute_sku']);
                                 $template->setData('absolute_weight', $config['absolute_weight']);
                                 if (count($templateIdsInConfig)) {
-                                    $_js_css = $con->fetchAll("select `template_id`, `css_adjustments`, `extra_js` from {$res->getTableName('itoris_dynamicproductoptions_template')} where `template_id` in (".implode(',', $templateIdsInConfig).")");
+                                    if ($storeId) {
+                                        $_js_css = $con->fetchAll("select `parent_id` as `template_id`, `css_adjustments`, `extra_js` from {$res->getTableName('itoris_dynamicproductoptions_template')} where `parent_id` in (".implode(',', $templateIdsInConfig).") and `store_id`={$storeId}");
+                                    } else {
+                                        $_js_css = $con->fetchAll("select `template_id`, `css_adjustments`, `extra_js` from {$res->getTableName('itoris_dynamicproductoptions_template')} where `template_id` in (".implode(',', $templateIdsInConfig).")");
+                                    }
                                     $_js = ''; $_css = '';
                                     foreach($_js_css as $index => $jc) {
                                         if (trim($jc['css_adjustments'])) $_css .= "/* CSS from Template #{$jc['template_id']} */\n".trim($jc['css_adjustments']).($index < count($_js_css) - 1 ? "\n\n" : '');
@@ -218,7 +236,7 @@ class MassLoad extends \Itoris\DynamicProductOptions\Controller\Adminhtml\Produc
                         }
                     }
                     if (!$silenceMode) {
-                        $this->messageManager->addSuccess(__(sprintf('%s products have been changed', $saved)));
+                        $this->messageManager->addSuccess(__('%1 products have been changed', $saved));
                         
                         //invalidate FPC
                         $cacheTypeList = $this->_objectManager->create('\Magento\Framework\App\Cache\TypeList');

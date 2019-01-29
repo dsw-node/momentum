@@ -41,7 +41,7 @@ class DeleteAjax extends \Itoris\DynamicProductOptions\Controller\Adminhtml\Prod
                 $con = $res->getConnection('write');
                 $con->query("delete from {$res->getTableName('itoris_dynamicproductoptions_template')} where `parent_id`={$template->getId()}");
                 
-                $message = __(sprintf('Template %s has been deleted', $template->getName()));
+                $message = __('Template %1 has been deleted', $template->getName());
                 $template->delete();
                 $result['message'] = $message;
             } else {

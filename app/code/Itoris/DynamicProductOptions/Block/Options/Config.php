@@ -158,7 +158,8 @@ class Config extends \Magento\Catalog\Block\Product\View\Options//\Magento\Frame
             //'mage19'          => $this->getDataHelper()->isMagento19(),
             'out_of_stock_message' => $this->escapeHtml(__('out of stock')),
             'section_conditions' => [],
-            'options_qty' => $this->getQuoteProductOptionsQtys()
+            'options_qty' => $this->getQuoteProductOptionsQtys(),
+            'extra_js' => $this->getExtraJs()
         ];
 
         $config = array_merge($defaultConfig, $config);
@@ -268,6 +269,7 @@ class Config extends \Magento\Catalog\Block\Product\View\Options//\Magento\Frame
                     if ($field) {
                         if (isset($field['comment']) && $field['comment']) $field['comment'] = (string)__($field['comment']);
                         if (isset($field['default_value']) && $field['default_value']) $field['default_value'] = (string)__($field['default_value']);
+                        if (isset($field['tooltip']) && $field['tooltip']) $field['tooltip'] = $this->parseMediaVariables($field['tooltip']);
                         if (isset($field['items']) && is_array($field['items'])) {
                             foreach($field['items'] as $key => $item) {
                                 if (isset($item['sku_is_product_id_linked']) && (int) $item['sku_is_product_id_linked'] && (int) $item['sku_is_product_id']) {
@@ -275,10 +277,18 @@ class Config extends \Magento\Catalog\Block\Product\View\Options//\Magento\Frame
                                     $tierPricesList = $product->getPriceInfo()->getPrice('tier_price')->getTierPriceList();
                                     $tierPrices = [];
                                     foreach ($tierPricesList as $tierPrice) {
-                                        $tierPrices[] = ['qty' => $tierPrice['price_qty'], 'price' => $priceCurrency->convert($tierPrice['website_price']), 'price_type' => 'fixed'];
+                                        $tierPrices[] = ['qty' => $tierPrice['price_qty'], 'price' => (float)$tierPrice['website_price'] /*$priceCurrency->convert($tierPrice['website_price'])*/, 'price_type' => 'fixed'];
                                     }
                                     if (count($tierPrices)) $field['items'][$key]['tier_price'] = json_encode($tierPrices); else unset($field['items'][$key]['tier_price']);
+                                } else if (isset($field['items'][$key]['tier_price']) && $field['items'][$key]['tier_price']) {
+                                    $tierPrices = json_decode($field['items'][$key]['tier_price'], true);                                    
+                                    if (is_array($tierPrices) && count($tierPrices)) {
+                                        foreach($tierPrices as &$tierPrice) $tierPrice['price'] = $priceCurrency->convert($tierPrice['price']);
+                                        $field['items'][$key]['tier_price'] = json_encode($tierPrices);
+                                    } else unset($field['items'][$key]['tier_price']);
                                 }
+                                if (isset($item['tooltip']) && $item['tooltip']) $field['items'][$key]['tooltip'] = $this->parseMediaVariables($item['tooltip']);
+                                if (isset($item['swatchhtml']) && $item['swatchhtml']) $field['items'][$key]['swatchhtml'] = $this->parseMediaVariables($item['swatchhtml']);
                             }
                         }
                         $fields[] = $field;
@@ -292,7 +302,7 @@ class Config extends \Magento\Catalog\Block\Product\View\Options//\Magento\Frame
     public function getOptionPrice($option) {
         if ($option->getPrice()) {
             if ($option->getPriceType() == 'percent') {
-                $basePrice = $this->getProduct()->getFinalPrice();
+                $basePrice = $this->getProduct()->getFinalPrice(1);
                 $price = $basePrice * ($option->getPrice() / 100);
             } else {
                 $price = $option->getPrice();
@@ -443,7 +453,7 @@ class Config extends \Magento\Catalog\Block\Product\View\Options//\Magento\Frame
         $priceCurrency = $this->_objectManager->get('Magento\Framework\Pricing\PriceCurrencyInterface');
         $tierPricesList = $product->getPriceInfo()->getPrice('tier_price')->getTierPriceList();
         foreach ($tierPricesList as $tierPrice) {
-            $tierPrices[] = ['qty' => $tierPrice['price_qty'], 'price' => $priceCurrency->convert($tierPrice['website_price'])];
+            $tierPrices[] = ['qty' => $tierPrice['price_qty'], 'price' => (float)$tierPrice['website_price'] /*$priceCurrency->convert($tierPrice['website_price'])*/];
         }
         return $tierPrices;
     }
@@ -451,7 +461,33 @@ class Config extends \Magento\Catalog\Block\Product\View\Options//\Magento\Frame
     public function getTranslations() {
         return [
             'Qty' => __('Qty'),
-            'Buy %1 for %2 each' => __('Buy %1 for %2 each')
+            'Buy %1 for %2 each' => __('Buy %1 for %2 each'),
+            'Search...' => 'Search...',
+            'Sorry, nothing found...' => 'Sorry, nothing found...'
         ];
+    }
+    
+    public function parseMediaVariables($str) {
+        $str = __($str);
+        preg_match_all('/{{media url=\"(.*?)\"}}/', $str, $matches);
+        $mediaUrl = $this->getMediaUrl();
+        foreach($matches[0] as $key => $match) $str = str_replace($matches[0][$key], $mediaUrl.$matches[1][$key], $str);
+        
+        preg_match_all('/{{store direct_url=\"(.*?)\"}}/', $str, $matches);
+        $baseUrl = $this->getBaseUrl();
+        foreach($matches[0] as $key => $match) $str = str_replace($matches[0][$key], $baseUrl.$matches[1][$key], $str);
+        return $str;
+    }
+    
+    public function getMediaUrl(){
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+        $store = $objectManager->get('Magento\Store\Model\StoreManagerInterface')->getStore(0);
+        return $store->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA );
+    }
+    
+    public function getBaseUrl(){
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+        $store = $objectManager->get('Magento\Store\Model\StoreManagerInterface')->getStore();
+        return $store->getBaseUrl();
     }
 }

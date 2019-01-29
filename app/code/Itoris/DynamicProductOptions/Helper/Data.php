@@ -289,7 +289,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                         if ($field) {
                             if ($storeId > 0) {
                                 //check if field is absent in the default config we should remove it for store view as well
-                                if (!isset($field['internal_id']) || !isset($defaultStoreFields[(int) $field['internal_id']])) {
+                                if ((!isset($field['internal_id']) || !isset($defaultStoreFields[(int) $field['internal_id']])) && !in_array($field['type'], ['html', 'image'])) {
                                     unset($section['fields'][$index]);
                                     continue;
                                 }
@@ -322,6 +322,9 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                                     $con->query("delete from {$res->getTableName('catalog_product_option_title')} where `option_id`={$optionId}");
                                     $con->query("delete from {$res->getTableName('catalog_product_option_price')} where `option_id`={$optionId}");
                                     $con->query("delete from {$res->getTableName('catalog_product_option_type_value')} where `option_id`={$optionId}");
+                                } else {
+                                    $con->query("delete from {$res->getTableName('catalog_product_option_title')} where `option_id`={$optionId} and `store_id`={$storeId}");
+                                    $con->query("delete from {$res->getTableName('catalog_product_option_price')} where `option_id`={$optionId} and `store_id`={$storeId}");
                                 }
                                 $con->insert($res->getTableName('catalog_product_option_title'), [
                                     'option_title_id'         => $this->getMaxDb('catalog_product_option_title', 'option_title_id'),
@@ -382,6 +385,9 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                                         if ($storeId == 0) { //clean up
                                             $con->query("delete from {$res->getTableName('catalog_product_option_type_title')} where `option_type_id`={$valueId}");
                                             $con->query("delete from {$res->getTableName('catalog_product_option_type_price')} where `option_type_id`={$valueId}");
+                                        } else {
+                                            $con->query("delete from {$res->getTableName('catalog_product_option_type_title')} where `option_type_id`={$valueId} and `store_id`={$storeId}");
+                                            $con->query("delete from {$res->getTableName('catalog_product_option_type_price')} where `option_type_id`={$valueId} and `store_id`={$storeId}");
                                         }
                                         $con->insert($res->getTableName('catalog_product_option_type_title'), [
                                             'option_type_title_id'         => $this->getMaxDb('catalog_product_option_type_title', 'option_type_title_id'),

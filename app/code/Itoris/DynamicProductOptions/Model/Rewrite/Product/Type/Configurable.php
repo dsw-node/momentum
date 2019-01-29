@@ -145,7 +145,7 @@ class Configurable extends \Magento\ConfigurableProduct\Model\Product\Type\Confi
      * @return \Itoris\DynamicProductOptions\Helper\Data
      */
     public function getItorisHelper(){
-        return $this->_objectManager->create('Itoris\DynamicProductOptions\Helper\Data');
+        return $this->_objectManager->get('Itoris\DynamicProductOptions\Helper\Data');
     }
 
     /**

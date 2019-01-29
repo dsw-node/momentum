@@ -26,10 +26,13 @@
 	width: 14px;
 	background: url(images/icon-delete.gif);
 	cursor: pointer;
+    display:inline-block;
 }
 
 #itoris-dynamicoptions-field-manager-area .sp-replacer {
     padding: 2px 4px;
+    position:relative;
+    top:-5px;
 }
 
 #itoris-dynamicoptions-field-manager-area .sp-replacer .sp-preview  {
@@ -44,9 +47,16 @@
     display:none;
 }
 
-.dynamicoptions-value-base_img-span {display:none;}
-#itoris-dynamicoptions-field-manager-area .no-color .dynamicoptions-value-base_img-span {
+/*.dynamicoptions-value-base_img-span {display:none;}*/
+#itoris-dynamicoptions-field-manager-area .dynamicoptions-value-base_img-span {
     display:inline-block;
+    font-size:10px;
+    line-height:10px;
+}
+
+#itoris-dynamicoptions-field-manager-area .dynamicoptions-value-base_img-span span {
+    display:inline-block;
+    width:25px;
 }
 
 #itoris-dynamicoptions-field-manager-area .no-color .dynamicoptions-value-base_img-span span {
@@ -193,7 +203,7 @@
 	z-index: 751;
 }
 #itoris-dynamicoptions-field-manager-area .popup-window.wide {
-	width: 1250px;
+	width: 1350px;
 }
 #itoris-dynamicoptions-field-manager-area .popup-window.wide.select-window {
 	width: 1000px;
@@ -324,7 +334,7 @@
 	font-size: 16px;
 	font-weight: bold;
 }
-#itoris-dynamicoptions-field-manager-area .popup-window * {font-family:Arial;}
+#itoris-dynamicoptions-field-manager-area .popup-window {font-family:Arial;}
 #itoris-dynamicoptions-field-manager-area .popup-window .float-right .label {
 	font-size: 12px;
 }
@@ -340,7 +350,7 @@
 	width: 16px;
 	height:16px;
 }
-#itoris-dynamicoptions-field-manager-area .popup-window button {font-size:11px; font-weight:normal; padding: 3px 5px;}
+#itoris-dynamicoptions-field-manager-area .popup-window button {font-size:10px; font-weight:normal; padding: 3px 5px; position:relative; top:-5px;}
 #itoris-dynamicoptions-field-manager-area .popup-window td, #itoris-dynamicoptions-field-manager-area .popup-window th {
 	padding-left: 5px;
 	white-space: normal;
@@ -427,7 +437,10 @@
 	background-image: url(images/icon-edit.png);
 	margin: 3px;
 	float: right;
+    position:relative;
 }
+.dynamicoptions-visibility_condition {float:left; margin:3px 5px 0 0;}
+.tr-dynamicoptions-all .dynamicoptions-edit-pen-icon {float:none; display:inline-block;}
 .dynamicoptions-edit-pin-icon {
 	width: 13px;
 	height: 20px;
@@ -518,7 +531,7 @@
 	width: 250px;
 	z-index: 1005;
 }
-.dynamicoptions-has-tier {position:relative;}
+.dynamicoptions-has-tier, .dynamicoptions-has-tooltip, .dynamicoptions-has-swatchhtml {position:relative;}
 
 #loading-mask {z-index: 1010;}
 #itoris-dynamicoptions-field-manager-area .remove-product-link {display: none;}
@@ -557,7 +570,7 @@
 .product-custom-options {min-width:850px;}
 #itoris-dynamicoptions-field-manager-area .popup-window select#itoris_dynamicoptions_copy_dropdown {width:140px;}
 #itoris-dynamicoptions-field-manager-area .popup-window select#itoris_dynamicoptions_type_dropdown {width:120px;}
-#itoris-dynamicoptions-field-manager-area .popup-window td.only-radio {text-align:center}
+#itoris-dynamicoptions-field-manager-area .popup-window td.only-radio {text-align:center; position:relative;}
 
 .admin__fieldset .admin__field-complex .admin__field-complex-content {max-width:100%}
 
@@ -570,4 +583,15 @@
 #css_adjustments_div, #extra_js_div {margin-top:20px;}
 #edit_form #options_settings_div {padding-bottom:20px;}
 
+div[field-type="drop_down"] .only-radio, div[field-type="multiple"] .only-radio {display:none}
+div[field-type="html"] .tooltip-td, div[field-type="image"] .tooltip-td {display:none}
+
 #dpo_abstract_wysiwyg_magentovariable, #dpo_abstract_wysiwyg_magentowidget {display:none !important;}
+.dpoToolTipPopup, .dpoSwatchHtmlPopup {border:2px solid #000; background:#fff; position:absolute; right:0; top:0; width:640px; text-align:left; padding:5px 10px; z-index:760;}
+.dpoSwatchHtmlPopup {right:auto; left:100%;}
+.dpoToolTipPopup > .label, .dpoSwatchHtmlPopup > .label {margin-bottom:5px; font-size:14px;}
+.dpoToolTipPopup + .edit-value-tooltip:before, .dpoSwatchHtmlPopup + .edit-value-tooltip:before {content:' '; position:fixed; left:0; top:0; right:0; bottom:0; background:#000; z-index:755; opacity:0.3;}
+.dpoToolTipPopup #dpo_abstract_wysiwyg, .dpoSwatchHtmlPopup #dpo_abstract_wysiwyg {width:100%; margin:0 0 10px 0}
+.dpoToolTipPopup .cancel_btn, .dpoToolTipPopup .apply_btn, .dpoSwatchHtmlPopup .cancel_btn, .dpoSwatchHtmlPopup .apply_btn {width:auto !important; padding: 0px 10px !important; margin-right:10px;}
+.tr-dynamicoptions-html .edit-tooltip {display:none}
+.dynamicoptions-value-swatch:not(:checked) + .edit-value-swatchhtml, .dynamicoptions-value-swatch:not(:checked) ~ .dynamicoptions-has-swatchhtml {display:none;}

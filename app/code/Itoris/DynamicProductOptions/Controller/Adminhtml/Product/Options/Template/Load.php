@@ -38,11 +38,17 @@ class Load extends \Itoris\DynamicProductOptions\Controller\Adminhtml\Product\Op
         $productId = (int)$this->getRequest()->getParam('product_id');
         $method = (int)$this->getRequest()->getParam('method');
         $prevSections = $sections = json_decode($this->getRequest()->getParam('sections'), true);
+        $prevCSS = $this->getRequest()->getParam('css_adjustments', '');
+        $prevJS = $this->getRequest()->getParam('extra_js', '');
         try {
             $template = $this->_objectManager->create('Itoris\DynamicProductOptions\Model\Template')->load($templateId);
             if ($template->getId()) {
-                $result['message'] = __(sprintf('Template %s has been loaded', $template->getName()));
+                $result['message'] = __('Template %1 has been loaded', $template->getName());
                 $result['template'] = $template->getData();
+                if (trim($result['template']['css_adjustments'])) $result['template']['css_adjustments'] = "/* CSS from Template #{$template->getId()} */\n".trim($result['template']['css_adjustments']);
+                if (trim($result['template']['extra_js'])) $result['template']['extra_js'] = "/* JS from Template #{$template->getId()} */\n".trim($result['template']['extra_js']);
+                if (trim($prevCSS) && ($method == 1 || $method == 3)) $result['template']['css_adjustments'] = trim($prevCSS).($result['template']['css_adjustments'] ? "\n\n".$result['template']['css_adjustments'] : '');
+                if (trim($prevJS) && ($method == 1 || $method == 3)) $result['template']['extra_js'] = trim($prevJS).($result['template']['extra_js'] ? "\n\n".$result['template']['extra_js'] : '');
                 $newSections = json_decode($template->getConfiguration(), true);
                 if ($method == 2 || $method == 3) {
                     foreach($newSections as $key => $section) {
@@ -72,7 +78,7 @@ class Load extends \Itoris\DynamicProductOptions\Controller\Adminhtml\Product\Op
                     foreach($newSections as $key => $section) {
                         if (!is_array($section['fields'])) continue;
                         $section['order'] = count($sections);
-                        foreach($section['fields'] as $key2 => $field) {
+                        foreach($section['fields'] as $key2 => & $field) {
                             if (!is_array($field)) continue;
                             $section['fields'][$key2]['section_order'] = $section['order'];
                             if (isset($field['internal_id'])) $section['fields'][$key2]['internal_id'] += $maxInternalId;
@@ -81,6 +87,20 @@ class Load extends \Itoris\DynamicProductOptions\Controller\Adminhtml\Product\Op
                                 if ($_condition && isset($_condition['conditions']) && is_array($_condition['conditions'])) {
                                     foreach($_condition['conditions'] as $key => $condition) $_condition['conditions'][$key]['field'] += $maxInternalId;
                                     $section['fields'][$key2]['visibility_condition'] = json_encode($_condition);
+                                }
+                            }
+                            if (isset($field['items']) && is_array($field['items'])) {
+                                foreach($field['items'] as &$item) {
+                                    if (!is_array($item)) continue;
+                                    if (isset($item['visibility_condition']) && $item['visibility_condition']) {
+                                        $_condition = json_decode($item['visibility_condition'], true);
+                                        if ($_condition && isset($_condition['conditions']) && is_array($_condition['conditions'])) {
+                                            foreach($_condition['conditions'] as $key => $condition) {
+                                                if (isset($_condition['conditions'][$key]['field'])) $_condition['conditions'][$key]['field'] += $maxInternalId;
+                                            }
+                                            $item['visibility_condition'] = json_encode($_condition);
+                                        }
+                                    }
                                 }
                             }
                         }

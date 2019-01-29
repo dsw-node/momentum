@@ -45,8 +45,9 @@ class OrderImages implements ObserverInterface
     ) {
         $this->_objectManager = $objectManager;
         $this->_request = $request;
+        $this->_backendConfig = $this->_objectManager->get('Magento\Backend\App\ConfigInterface');
         try {
-            $this->isEnabledFlag = $this->_objectManager->create('Itoris\DynamicProductOptions\Helper\Data')->getSettings(true)->getEnabled();
+            $this->isEnabledFlag = $this->_objectManager->get('Itoris\DynamicProductOptions\Helper\Data')->getSettings(true)->getEnabled();
         } catch (\Exception $e) {/** save store model */}
     }
 
@@ -62,8 +63,12 @@ class OrderImages implements ObserverInterface
             $data = $orderItem->getData();
             if (!isset($data['product_options']['options'])) continue;
             foreach($data['product_options']['options'] as & $option) {
-                //$option['value'] = preg_replace("/<img[^>]+\>/i", "\n", $option['value']); ;
-                $option['print_value'] = preg_replace("/<img[^>]+\>/i", "\n", $option['print_value']);
+                if ($this->_backendConfig->getValue('itoris_dynamicproductoptions/general/hide_order_images')) {
+                    $option['value'] = preg_replace("/<img[^>]+\>/i", "\n", $option['value']); //this to remove images from email
+                    $option['value'] = preg_replace("/<div.*<\/div>/Ui", "\n", $option['value']); //this to remove color swatches from email
+                }
+                $option['print_value'] = preg_replace("/<img[^>]+\>/i", "\n", $option['print_value']); //images
+                $option['print_value'] = preg_replace("/<div.*<\/div>/Ui", "\n", $option['print_value']); //color swatches
                 $option['print_value'] = str_replace("<br/>", ", ", $option['print_value']);
             }
             $orderItem->setData($data);

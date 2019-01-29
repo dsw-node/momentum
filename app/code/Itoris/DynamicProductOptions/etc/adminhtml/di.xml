@@ -29,6 +29,7 @@
     <preference for="Magento\Catalog\Block\Adminhtml\Product\Edit\Tab\Options" type="Itoris\DynamicProductOptions\Block\Adminhtml\Product\Edit\Tab\Options" />
     <preference for="Magento\Catalog\Model\Product\Type\Simple" type="Itoris\DynamicProductOptions\Model\Rewrite\Product\Type\Simple" />
     <preference for="Magento\Catalog\Model\Product\Type\Virtual" type="Itoris\DynamicProductOptions\Model\Rewrite\Product\Type\Virtual" />
+    <preference for="Magento\Bundle\Model\Product\Type" type="Itoris\DynamicProductOptions\Model\Rewrite\Product\Type\Bundle" />
 
     <preference for="Magento\Catalog\Model\Product\Option" type="Itoris\DynamicProductOptions\Model\Rewrite\Option" />
     <preference for="Magento\Catalog\Model\Product\Option\Value" type="Itoris\DynamicProductOptions\Model\Rewrite\Option\Value" />
@@ -59,4 +60,7 @@
     <type name="Magento\Sales\Block\Adminhtml\Items\Column\Name">
         <plugin name="dpo-option-long-value-backend-order" type="Itoris\DynamicProductOptions\Plugin\LongOptionValueInOrder"/>
     </type>	
+    <type name="Magento\Catalog\Model\Product\Copier">
+        <plugin name="plugin-itoris-dpo-product-duplicate" type="Itoris\DynamicProductOptions\Plugin\ProductDuplicate"/>
+    </type>
 </config>

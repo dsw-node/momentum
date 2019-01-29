@@ -31,4 +31,11 @@ class LongOptionValueInOrder
     {
         return ['value' => nl2br($obj), 'remainder' => ''];
     }
+    
+    public function afterSetTemplate($subject, $result)
+    {
+        $newTemplate = 'Itoris_DynamicProductOptions::order/items/column/name.phtml';
+        if ($subject->getTemplate() != $newTemplate) $subject->setTemplate($newTemplate);
+        return $result;
+    }
 }

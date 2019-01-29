@@ -86,6 +86,6 @@ class File extends \Magento\Catalog\Model\Product\Option\Type\File
      * @return \Itoris\DynamicProductOptions\Helper\Data
      */
     public function getItorisHelper(){
-        return $this->_objectManager->create('Itoris\DynamicProductOptions\Helper\Data');
+        return $this->_objectManager->get('Itoris\DynamicProductOptions\Helper\Data');
     }
 }

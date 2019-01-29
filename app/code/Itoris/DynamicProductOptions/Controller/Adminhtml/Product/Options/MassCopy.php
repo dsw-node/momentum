@@ -52,14 +52,14 @@ class MassCopy extends \Itoris\DynamicProductOptions\Controller\Adminhtml\Produc
                         $saved++;
                     }
                 }
-                $this->messageManager->addSuccess(__(sprintf('%s products have been changed', $saved)));
+                $this->messageManager->addSuccess(__('%1 products have been changed', $saved));
                 
                 //invalidate FPC
                 $cacheTypeList = $this->_objectManager->create('\Magento\Framework\App\Cache\TypeList');
                 $cacheTypeList->invalidate('full_page');
                     
             } else {
-                $this->messageManager->addError(__(sprintf('Product doesn\'t have custom options')));
+                $this->messageManager->addError(__('Product doesn\'t have custom options'));
             }
         } else {
             $this->messageManager->addError(__('Please select product ids'));

@@ -38,7 +38,7 @@
 <div id="itoris_dynamicproductoptions_popup_mask" style="display: none;"></div>
 <div id="itoris_dynamicproductoptions_popup" style="display: none;">
 	<div id="itoris_dynamicproductoptions_popup_close_icon"></div>
-	<h2 class="popup-title"><?php echo $block->escapeHtml(sprintf(__('Configure %s'), $block->getProduct()->getName())) ?></h2>
+	<h2 class="popup-title"><?php echo $block->escapeHtml(__('Configure %1', $block->getProduct()->getName())) ?></h2>
 	<div id="itoris_dynamicproductoptions">
 		<?php $sectionConditions = []; ?>
 		<?php foreach ($block->getSections() as $section): ?>
@@ -198,9 +198,6 @@
         if (!$('product-options-wrapper').hasClassName('dpo_initialized')) {
             $('product-options-wrapper').addClassName('dpo_initialized');
             dpoobj = dynamicOptions<?php echo $block->getProductId() ?> = new DynamicProductOptions(<?php echo $block->getJsObjectConfig(['section_conditions' => $sectionConditions]) ?>, <?php echo $block->getAllFieldsJson() ?>);
-            <?php if ($block->getExtraJs()): ?>
-            <?php echo $block->getExtraJs() ?>
-            <?php endif; ?>
             var withQtys = $$('#itoris_dynamicproductoptions select, #itoris_dynamicproductoptions input');
             withQtys.each(function (select) {
                 dpoobj.updateQtyElement(select.id);

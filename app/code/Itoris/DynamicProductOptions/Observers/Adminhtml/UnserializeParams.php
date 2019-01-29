@@ -73,7 +73,7 @@ class UnserializeParams implements ObserverInterface
             $this->_request->setParams($params);
         }
         try {
-            $this->isEnabledFlag = $this->_objectManager->create('Itoris\DynamicProductOptions\Helper\Data')->getSettings(true)->getEnabled();
+            $this->isEnabledFlag = $this->_objectManager->get('Itoris\DynamicProductOptions\Helper\Data')->getSettings(true)->getEnabled();
         } catch (\Exception $e) {/** save store model */}
     }
 

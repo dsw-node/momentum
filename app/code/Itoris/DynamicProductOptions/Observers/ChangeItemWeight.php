@@ -46,7 +46,7 @@ class ChangeItemWeight implements ObserverInterface
         $this->_objectManager = $objectManager;
         $this->_request = $request;
         try {
-            $this->isEnabledFlag = $this->_objectManager->create('Itoris\DynamicProductOptions\Helper\Data')->getSettings(true)->getEnabled();
+            $this->isEnabledFlag = $this->_objectManager->get('Itoris\DynamicProductOptions\Helper\Data')->getSettings(true)->getEnabled();
         } catch (\Exception $e) {/** save store model */}
     }
 
@@ -74,7 +74,8 @@ class ChangeItemWeight implements ObserverInterface
         if ($isAbsoluteWeight == 1) $quoteItem->setWeight(0); //absolute weight
         if ($isAbsoluteSku == 1) { //absolute sku
             $productOrigSku = $con->fetchOne("select `sku` from {$res->getTableName('catalog_product_entity')} where `entity_id`={$product->getId()}");
-            $quoteItem->setSku(str_ireplace($productOrigSku.'-', '', $quoteItem->getSku()));
+            //$quoteItem->setSku(str_ireplace($productOrigSku.'-', '', $quoteItem->getSku()));
+            $quoteItem->setSku(substr($quoteItem->getSku(), strlen($productOrigSku) + 1));
         } else if ($isAbsoluteSku == 2) { //fixed sku
             $productOrigSku = $con->fetchOne("select `sku` from {$res->getTableName('catalog_product_entity')} where `entity_id`={$product->getId()}");
             $quoteItem->setSku($productOrigSku);

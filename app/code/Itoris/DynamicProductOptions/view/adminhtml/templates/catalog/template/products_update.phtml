@@ -48,7 +48,7 @@ if ($templateId) {
                 'jquery'
             ], function (jQuery) {
                 window.dpoConfigIds = <?php echo json_encode($configIds); ?>;
-                window.dpoPageSize = 100;
+                window.dpoPageSize = 20;
                 window.dpoCurrentPosition = 0;
                 window.dpoProcessed = 0;
                 window.dpoProcessConfigs = function(){                    
@@ -56,7 +56,7 @@ if ($templateId) {
                     window.dpoProcessed += toProcess.length;
                     jQuery.ajax({
                         url: '<?php echo $block->getUrl('dynamicproductoptions/product_options_template/processConfigs'); ?>',
-                        data: {configs: toProcess, template_id: <?php echo $templateId; ?>},
+                        data: {configs: toProcess, template_id: <?php echo $templateId; ?>, form_key: FORM_KEY},
                         method: 'POST'
                     }).done(function(result){
                         if (result.success) {

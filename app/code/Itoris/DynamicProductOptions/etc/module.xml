@@ -25,7 +25,7 @@
  */
 -->
 <config>
-    <module name="Itoris_DynamicProductOptions" setup_version="2.4.3">
+    <module name="Itoris_DynamicProductOptions" setup_version="2.6.1">
         <sequence>
             <module name="Magento_Catalog" />
 			<module name="Magento_Config" />

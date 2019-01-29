@@ -127,6 +127,6 @@ class Options extends \Magento\Catalog\Block\Adminhtml\Product\Edit\Tab\Options
      * @return \Itoris\DynamicProductOptions\Helper\Data
      */
     protected function getDataHelper() {
-        return $this->_objectManager->create('Itoris\DynamicProductOptions\Helper\Data');
+        return $this->_objectManager->get('Itoris\DynamicProductOptions\Helper\Data');
     }
 }

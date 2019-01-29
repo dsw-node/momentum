@@ -29,6 +29,6 @@ namespace Itoris\DynamicProductOptions\Block\Options\Type;
 class Image extends AbstractOptions
 {
     protected function _construct() {
-        $this->setTemplate('option/image.phtml');
+        $this->setTemplate('Itoris_DynamicProductOptions::option/image.phtml');
     }
 }

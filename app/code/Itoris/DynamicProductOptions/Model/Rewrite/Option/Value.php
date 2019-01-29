@@ -116,7 +116,7 @@ class Value extends \Magento\Catalog\Model\Product\Option\Value
                 if ($this->isSkuProduct()) {
                     $this->dpoProduct = $this->getDpoProduct();
                     if ($this->dpoProduct->getId()) {
-                        $_price =  $this->dpoProduct->getFinalPrice() ? $this->dpoProduct->getFinalPrice() : $this->dpoProduct->getPrice();
+                        $_price =  $this->dpoProduct->getFinalPrice(1) ? $this->dpoProduct->getFinalPrice(1) : $this->dpoProduct->getPrice();
                         if ($_price) $price = $_price;
                     }
                 }
@@ -149,6 +149,7 @@ class Value extends \Magento\Catalog\Model\Product\Option\Value
     public function getSku()
     {
         $sku = parent::getSku();
+        if (strpos($sku, '$1') !== false) $sku = str_replace('$1', $this->getTitle(), $sku); //dynamic sku
         if ($this->getItorisHelper()->isEnabledOnFrontend()) {
             $this->dpoConfig = $this->getDpoConfig();
             if ($this->dpoConfig) {
@@ -176,10 +177,14 @@ class Value extends \Magento\Catalog\Model\Product\Option\Value
     
     public function getDpoConfig() {
         if (!$this->dpoConfig) {
+            $this->dpoConfig = $this->_registry->registry('dpoConfigValue'.$this->getOptionTypeId());
+            if (!$this->dpoConfig) {
             $res = $this->_objectManager->get('Magento\Framework\App\ResourceConnection');
             $con = $res->getConnection('read');
-            if (!$this->dpoConfig) $this->dpoConfig = json_decode($con->fetchOne("select `configuration` from {$res->getTableName('itoris_dynamicproductoptions_option_value')} where `orig_value_id`={$this->getOptionTypeId()} and `store_id`={$this->getStore()->getId()}"), true);
-            if (!$this->dpoConfig) $this->dpoConfig = json_decode($con->fetchOne("select `configuration` from {$res->getTableName('itoris_dynamicproductoptions_option_value')} where `orig_value_id`={$this->getOptionTypeId()} and `store_id`=0"), true);
+                if (!$this->dpoConfig) $this->dpoConfig = json_decode($con->fetchOne("select `configuration` from {$res->getTableName('itoris_dynamicproductoptions_option_value')} where `orig_value_id`={$this->getOptionTypeId()} and `store_id`={$this->getStore()->getId()}"), true);
+                if (!$this->dpoConfig) $this->dpoConfig = json_decode($con->fetchOne("select `configuration` from {$res->getTableName('itoris_dynamicproductoptions_option_value')} where `orig_value_id`={$this->getOptionTypeId()} and `store_id`=0"), true);
+                $this->_registry->register('dpoConfigValue'.$this->getOptionTypeId(), $this->dpoConfig);
+            }
         }
         return $this->dpoConfig;
     }
@@ -187,7 +192,11 @@ class Value extends \Magento\Catalog\Model\Product\Option\Value
     public function getDpoProduct() {
         $this->dpoConfig = $this->getDpoConfig();
         if (!$this->dpoProduct && $this->dpoConfig) {
-            $this->dpoProduct = $this->_objectManager->create('Magento\Catalog\Model\Product')->setStoreId($this->getStore()->getId())->load((int)$this->dpoConfig['sku']);
+            $this->dpoProduct = $this->_registry->registry('dpoProductValue'.$this->getOptionTypeId());
+            if (!$this->dpoProduct) {
+                $this->dpoProduct = $this->_objectManager->create('Magento\Catalog\Model\Product')->setStoreId($this->getStore()->getId())->load((int)$this->dpoConfig['sku']);
+                $this->_registry->register('dpoProductValue'.$this->getOptionTypeId(), $this->dpoProduct);
+            }
         }
         return $this->dpoProduct;
     }
@@ -209,6 +218,6 @@ class Value extends \Magento\Catalog\Model\Product\Option\Value
      * @return \Itoris\DynamicProductOptions\Helper\Data
      */
     public function getItorisHelper(){
-        return $this->_objectManager->create('Itoris\DynamicProductOptions\Helper\Data');
+        return $this->_objectManager->get('Itoris\DynamicProductOptions\Helper\Data');
     }
 }

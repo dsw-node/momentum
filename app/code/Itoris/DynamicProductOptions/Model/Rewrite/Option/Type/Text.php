@@ -29,6 +29,7 @@ class Text extends \Magento\Catalog\Model\Product\Option\Type\Text
 {
     /** @var \Magento\Framework\ObjectManagerInterface|null  */
     protected $_objectManager = null;
+    private $_formattedOptionValue = null;
 
     /**
      * @param \Magento\Framework\ObjectManagerInterface $objectManager
@@ -47,6 +48,7 @@ class Text extends \Magento\Catalog\Model\Product\Option\Type\Text
         array $data = []
     ) {
         $this->_objectManager = $objectManager;
+        $this->isEnabledDynamicOptions = $this->getItorisHelper()->isEnabledOnFrontend();
         parent::__construct($checkoutSession, $scopeConfig, $escaper, $string, $data);
     }
 
@@ -72,7 +74,7 @@ class Text extends \Magento\Catalog\Model\Product\Option\Type\Text
             $dpoObj = $this->_objectManager->create('Itoris\DynamicProductOptions\Model\Options')->setStoreId($product->getStoreId())->load($product->getId(), 'product_id');
             if (!$dpoObj->getConfigId()) $dpoObj->setStoreId(0)->load($product->getId(), 'product_id');
             if ($dpoObj->getAbsolutePricing() == 1) { //absolute price
-                $price -= $product->getFinalPrice();
+                $price -= $basePrice;
                 $product->setOptionsAbsolutePricing(1);
             } else if ($dpoObj->getAbsolutePricing() == 2) { //fixed price
                 $price = 0;
@@ -81,11 +83,37 @@ class Text extends \Magento\Catalog\Model\Product\Option\Type\Text
         return $price;
     }
     
+    public function getOptionSku($optionValue, $skuDelimiter)
+    {
+        $sku = $this->getOption()->getSku();
+        if (strpos($sku, '$1') !== false) $sku = str_replace('$1', $this->getTitle(), trim($optionValue)); //dynamic sku
+        return $sku;
+    }
+    
+    public function getFormattedOptionValue($optionValue) {
+        if ($this->_formattedOptionValue === null) {
+            if ($this->isEnabledDynamicOptions) {
+                $this->_formattedOptionValue = $this->getEditableOptionValue($optionValue);
+            } else {
+                parent::getFormattedOptionValue($optionValue);
+            }
+        }
+        return $this->_formattedOptionValue;
+    }
+
+    public function getEditableOptionValue($optionValue) {
+        if (!$this->isEnabledDynamicOptions) {
+            return parent::getEditableOptionValue($optionValue);
+        }
+        $sku = $this->getOptionSku($optionValue, '-');
+        return $optionValue.($sku ? ' ('.__('SKU').': '.$sku.')' : '');
+    }
+    
     /**
      * @return \Itoris\DynamicProductOptions\Helper\Data
      */
     public function getItorisHelper(){
-        return $this->_objectManager->create('Itoris\DynamicProductOptions\Helper\Data');
+        return $this->_objectManager->get('Itoris\DynamicProductOptions\Helper\Data');
     }
 
 }

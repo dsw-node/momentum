@@ -40,7 +40,7 @@ class Upload extends \Itoris\DynamicProductOptions\Controller\Adminhtml\Product\
             $storeManager = $this->_objectManager->get('Magento\Store\Model\StoreManagerInterface');
             $storeMediaUrl = $storeManager
                                     ->getStore($storeId)
-                                    ->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA, true);
+                                    ->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA);
 
             $str .= '<div id="image_src">' . str_replace(['http://', 'https://'], '//', $storeMediaUrl) .'itoris/files' . $result['file'] . '</div>';
         } catch (\Exception $e) {

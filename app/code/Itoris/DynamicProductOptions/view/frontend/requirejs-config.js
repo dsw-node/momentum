@@ -7,10 +7,12 @@ var config = {
         '*': {
             'itoris_options'  : 'Itoris_DynamicProductOptions/js/options'
         }
+    },
+    config: {
+        mixins: {
+            'Magento_Catalog/js/catalog-add-to-cart': {
+                'Itoris_DynamicProductOptions/js/catalog-add-to-cart-dpo': true
+            }
+        }
     }
-    ,
-    shim: {
-        //"Itoris_DynamicProductOptions/js/options": ["prototype"]
-    }
-
 };
