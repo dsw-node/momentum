@@ -50,19 +50,14 @@ class SaveStorePickupToOrderObserver implements ObserverInterface
         $order->setPickupStore($quote->getPickupStore());
         $collection = '';
         $store = '';
-
-        if ($_COOKIE['pickupStoreVal']) 
-        {
-            $id = $_COOKIE['pickupStoreVal'];
+        if (@$_COOKIE['pickupStoreVal']){
+            $id = @$_COOKIE['pickupStoreVal'];
             $collection = $this->_storeCollection->getCollection()->addFieldToFilter('store_id', $id);
         }
-
-          foreach ($collection->getData() as $stores) 
-        {
+        foreach ($collection->getData() as $stores){
             $store = $stores;
         }
-        if ($order->getShippingMethod() == "storepickup_storepickup") 
-        {
+        if ($order->getShippingMethod() == "storepickup_storepickup"){
             $storeName = explode(' ', $store['sname']);
             $streetAddress = array($store['address']);
             $firstName = '';
@@ -85,7 +80,6 @@ class SaveStorePickupToOrderObserver implements ObserverInterface
                 $firstName = $storeName[0];
                 $lastName = $storeName[1];
             }
-
             $order->getShippingAddress()->setFirstname($firstName);
             $order->getShippingAddress()->setLastname($lastName);
             $order->getShippingAddress()->setStreet($streetAddress);
