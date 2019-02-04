@@ -37,7 +37,7 @@ class StorePickupConfigProvider implements ConfigProviderInterface
      * @var \Magento\Framework\App\Config\ScopeConfigInterface
      */
     protected $scopeConfig;
-
+    protected $checkoutSession;
     /**
      * @param \Magento\Store\Model\StoreManagerInterface $storeManager
      * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
@@ -45,12 +45,14 @@ class StorePickupConfigProvider implements ConfigProviderInterface
     public function __construct(
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
-        \Mageants\StoreLocator\Model\ManageStore $storeCollection
+        \Mageants\StoreLocator\Model\ManageStore $storeCollection,
+        \Magento\Checkout\Model\Session $checkoutSession
     ) 
     {
         $this->_storeCollection = $storeCollection;
         $this->storeManager = $storeManager;
         $this->scopeConfig = $scopeConfig;
+        $this->checkoutSession = $checkoutSession;
     }
 
     /**
@@ -58,6 +60,7 @@ class StorePickupConfigProvider implements ConfigProviderInterface
      */
     public function getConfig()
     {
+        $cartData = $this->checkoutSession->getQuote();
         $storeId = $this->getStoreId();
         $enabled = $this->scopeConfig->getValue(self::XPATH_Enabled, ScopeInterface::SCOPE_STORE, $storeId);
         $disabled = $this->scopeConfig->getValue(self::XPATH_DISABLED, ScopeInterface::SCOPE_STORE, $storeId);
@@ -105,7 +108,9 @@ class StorePickupConfigProvider implements ConfigProviderInterface
                     'hourMax' => $hourMax,
                     'stores' => $storeLocation,
                     'pickupaddress' => $pickupStore,
-                    'disableDays' => $disableDays
+                    'disableDays' => $disableDays,
+                    'pickup_date'=>$cartData->getPickupDate(),
+                    'pickup_store'=>$cartData->getPickupStore()
                 ]
             ]
         ];

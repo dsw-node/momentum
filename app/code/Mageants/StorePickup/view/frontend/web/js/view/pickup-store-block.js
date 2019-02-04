@@ -5,14 +5,48 @@ define(
     [
     'jquery',
     'ko',
-    'uiComponent'
-    ], function ($, ko, Component) {
+    'uiComponent',
+    'Mageants_StorePickup/js/action/update-pickup',
+    'Magento_Customer/js/customer-data',
+    'Magento_Checkout/js/model/quote'
+    ], function ($, ko, Component,updatePickupAction,customerData,quote) {
     'use strict';
 
     return Component.extend(
         {
         defaults: {
         template: 'Mageants_StorePickup/pickup-store-block'
+        },
+        updateDeliverydate: function (item) {
+            var pickup=$('#pickup_store').val();
+            var pickup_date=$('#pickup_date').val();
+            if(pickup!='' &&  pickup_date!='') {
+                updatePickupAction(pickup, pickup_date).done(
+                    function (response) {
+                        var totals = response.totals,
+                            data = JSON.parse(this.data),
+                            quoteItemData = window.checkoutConfig.quoteItemData;
+                        if (!response.status) {
+                        } else {
+                            customerData.reload('cart');
+                        }
+                    }
+                );
+            }
+        },
+        getDatePickerValue: function ($parent) {
+            var pickup_store=window.checkoutConfig.shipping.store_pickup.pickup_store;
+            if (typeof(pickup_store) != 'undefined' && pickup_store != null){
+                // $("#pickup_store option:contains('"+pickup_store+"')").attr('selected', 'selected');
+                $("#pickup_store").val(pickup_store);
+            }
+            var deliverydate=window.checkoutConfig.shipping.store_pickup.pickup_date;
+            if (typeof(deliverydate) != 'undefined' && deliverydate != null){
+               var ret = deliverydate.split(" ");
+               var deliverydate = ret[0];
+               return deliverydate;
+            }
+
         },
         initialize: function () {
         this._super();
@@ -21,7 +55,7 @@ define(
         var noday = window.checkoutConfig.shipping.store_pickup.noday;
         var hourMin = parseInt(window.checkoutConfig.shipping.store_pickup.hourMin);
         var hourMax = parseInt(window.checkoutConfig.shipping.store_pickup.hourMax);
-        var format = window.checkoutConfig.shipping.store_pickup.format;
+        var format = 'dd-mm-yy'//window.checkoutConfig.shipping.store_pickup.format;
         var disableDays = window.checkoutConfig.shipping.store_pickup.disableDays;
        
         this.stores = window.checkoutConfig.shipping.store_pickup.stores;

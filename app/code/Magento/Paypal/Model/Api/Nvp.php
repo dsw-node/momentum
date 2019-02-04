@@ -819,7 +819,7 @@ class Nvp extends \Magento\Paypal\Model\Api\AbstractApi
         $options = $this->getShippingOptions();
         if ($this->getAddress()) {
             $request = $this->_importAddresses($request);
-            $request['ADDROVERRIDE'] = 1;
+            $request['ADDROVERRIDE'] = 0;
         } elseif ($options && count($options) <= 10) {
             // doesn't support more than 10 shipping options
             $request['CALLBACK'] = $this->getShippingOptionsCallbackUrl();

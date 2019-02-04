@@ -7,13 +7,13 @@
  */
 -->
 <div id="store-pickup-additional-block" data-bind="attr: { style:enabled }">
-	<label class="label">Pickup Store</label>
+	<label class="label">Pick Up Location</label>
 	<div class="control">
-		<select name="pickup_store" id="pickup_store" data-bind="options: stores, optionsText: 'name', optionsValue: 'id', optionsCaption: 'Select Store ...'"></select>
+		<select name="pickup_store" id="pickup_store" data-bind="event: {change:function(){updateDeliverydate($parent);}},options: stores, optionsText: 'name', optionsValue: 'id', optionsCaption: 'Select Store ...'"></select>
 	</div>
-	<label class="label">Pickup Date</label>
+	<label class="label">Pick Up Date</label>
 	<div class="control">
-		<input class="input-text" type="text" data-bind="datetimepicker: true" name="pickup_date" id="pickup_date" readonly="true"/>
+		<input class="input-text" type="text" data-bind="datetimepicker: true,event: {change:function(){updateDeliverydate($parent);}},attr: {value:getDatePickerValue($parent)}" name="pickup_date" id="pickup_date" readonly="true"/>
 	</div>
 </div>
 <br/>

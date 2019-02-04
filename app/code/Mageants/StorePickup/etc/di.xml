@@ -3,4 +3,10 @@
     <type name="Magento\Checkout\Model\ShippingInformationManagement">
         <plugin name="mageants_save_store_pickup_in_quote" type="Mageants\StorePickup\Plugin\Checkout\Model\ShippingInformationManagement" sortOrder="1"/>
     </type>
+    <preference for="Mageants\StorePickup\Api\UpdatePickupInterface"
+                type="Mageants\StorePickup\Model\UpdatePickup" />
+    <preference for="Mageants\StorePickup\Api\GuestUpdatePickupInterface"
+                type="Mageants\StorePickup\Model\GuestUpdatePickup" />
+    <preference for="Mageants\StorePickup\Api\Data\UpdateItemDetailsInterface"
+                type="Mageants\StorePickup\Model\UpdateItemDetails" />
 </config>

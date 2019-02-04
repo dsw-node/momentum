@@ -17,13 +17,14 @@ class AddHtmlToOrderShippingBlockObserver implements ObserverInterface
      * @var \Magento\Framework\ObjectManagerInterface
      */
     protected $objectManager;
-
+    protected $_storeCollection;
     /**
      * @param \Magento\Framework\ObjectManagerInterface $objectManager
      */
-    public function __construct(\Magento\Framework\ObjectManagerInterface $objectManager)
+    public function __construct(\Magento\Framework\ObjectManagerInterface $objectManager,\Mageants\StoreLocator\Model\ManageStore $storeCollection)
     {
         $this->objectManager = $objectManager;
+        $this->_storeCollection = $storeCollection;
     }
 
     public function execute(EventObserver $observer)
@@ -48,9 +49,10 @@ class AddHtmlToOrderShippingBlockObserver implements ObserverInterface
                 } else {
                     $formattedDate = __('N/A');
                 }
+                $collection = $this->_storeCollection->getCollection()->addFieldToFilter('store_id', $order->getPickupStore())->getFirstItem();
                 $storePickupBlock = $this->objectManager->create('Magento\Framework\View\Element\Template');
                 $storePickupBlock->setPickupDate($formattedDate);
-                $storePickupBlock->setPickupStore($order->getPickupStore());
+                $storePickupBlock->setPickupStore($collection->getSname());
                 $storePickupBlock->setTemplate('Mageants_StorePickup::order_shipping_info.phtml');
                 $html = $observer->getTransport()->getOutput() . $storePickupBlock->toHtml();
                 $observer->getTransport()->setOutput($html);
