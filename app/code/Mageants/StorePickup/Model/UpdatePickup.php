@@ -89,7 +89,7 @@ class UpdatePickup implements UpdatePickupInterface
             if(!empty($pickup_date)){
                 $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
                 $timezone =$objectManager->create('Magento\Framework\Stdlib\DateTime\TimezoneInterface');
-                if(!empty($pickup_date)){
+                if(!empty($pickup_date) && $pickup_date!='0000-00-00'){
                     $pickup_date = $this->converToTz(trim($pickup_date),$timezone->getDefaultTimezone(),$timezone->getConfigTimezone());
                     $quote->setPickupDate($pickup_date);
                 }
