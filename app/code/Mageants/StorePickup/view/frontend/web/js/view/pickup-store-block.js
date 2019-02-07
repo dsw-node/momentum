@@ -133,5 +133,8 @@ define(
         }
         }
     );
+        $("input.shipping_type").change(function () {
+            console.log("method changedddddd");
+        });
     }
 );

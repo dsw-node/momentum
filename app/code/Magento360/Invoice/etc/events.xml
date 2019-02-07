@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="email_order_set_template_vars_before">
+        <observer name="add_extra_data_to_transport" instance="Magento360\Invoice\Observer\AddExtraDataToTransport" />
+    </event>
+    <event name="email_shipment_set_template_vars_before">
+        <observer name="shipment_add_extra_data_to_transport" instance="Magento360\Invoice\Observer\ShipmentExtraDataToTransport" />
+    </event>
+    <event name="email_invoice_set_template_vars_before">
+        <observer name="invoice_add_extra_data_to_transport" instance="Magento360\Invoice\Observer\InvoiceExtraDataToTransport" />
+    </event>
+</config>
