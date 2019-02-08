@@ -6,9 +6,63 @@
 	line-height: 1.5em;
 }
 
+/**CART - Dropdown Block**/
+.dropdown-block .dropdown-heading {
+	font-family: 'Teko', serif;
+	font-size: 1.4em;
+	text-transform: uppercase;
+}
+.block-minicart .block-content > .actions > .primary .action.primary {
+	font-family: 'Teko', serif;
+	font-size:1.618em;
+	text-transform: uppercase;
+	font-weight: normal;
+}
+/**CART -END**/
+
+/**OPC - Checkout**/
+.opc-wrapper .step-title, .opc-block-shipping-information .shipping-information-title, .opc-block-summary > .title, .checkout-agreements-items .checkout-agreements-item-title{
+	font-family: 'Teko', serif;
+	font-size:1.618em;
+	text-transform: uppercase;
+}
+.opc-block-summary .items-in-cart > .title strong{
+	font-family: 'Teko', serif;
+	font-size:1.618em;
+	text-transform: uppercase;
+	font-weight: normal;
+}
+/**OPC - END**/
+
+/**SIGN UP**/
+.fieldset > .legend {
+	font-family: 'Teko', serif;
+	font-size:1.618em;
+	text-transform: uppercase;
+}
+.actions-toolbar > .primary:last-child, .actions-toolbar > .secondary:last-child {
+	font-family: 'Teko', serif;
+	font-size:1.618em;
+	color:grey;
+}
+.action.primary{
+	font-family: 'Teko', serif;
+	font-size:1.2em;
+	text-transform: uppercase;
+	font-weight: normal;
+}
+/**SIGN UP - END**/
+
+/**PRODUCT PAGE**/
+.product-info-main .box-tocart .action.tocart, .product-options-bottom .box-tocart .action.tocart {
+	font-weight: normal;
+	font-size:1.618em;
+}
+/**PRODUCT - END**/
 .header-container .right-column .top-links ul {
-	font-family: 'Teko', serif !important;
-	font-size: 1.5em !important;
+	font-family: 'Teko', serif;
+	font-size: 1.618em;
+	text-transform: uppercase;
 }
 
 .product-item-name{
