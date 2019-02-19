@@ -99,8 +99,8 @@ define([
             if (event) {
                 event.preventDefault();
             }
-
-            if (additionalValidators.validate()) {
+            var pickup_form = 'form[data-role=store-pickup-form]';
+            if (additionalValidators.validate() && $(pickup_form).validation() && $(pickup_form).validation('isValid')) {
                 if (quote.isVirtual()) {
                     $('input#' + self.getCode())
                         .closest('.payment-method').find('.payment-method-content .actions-toolbar:not([style*="display: none"]) button.action.checkout')

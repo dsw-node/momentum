@@ -50,58 +50,59 @@ class SaveStorePickupToOrderObserver implements ObserverInterface
         $order = $observer->getOrder();
         $quoteRepository = $this->_objectManager->create('Magento\Quote\Model\QuoteRepository');
         $quote = $quoteRepository->get($order->getQuoteId());
-        $order->setPickupDate($quote->getPickupDate());
-        $order->setPickupStore($quote->getPickupStore());
-        $this->log("Pickup Date".$quote->getPickupDate());
-        $this->log("Pickup Store".$quote->getPickupStore());
-        $collection = '';
-        $store = '';
-        if (@$_COOKIE['pickupStoreVal']){
-            $id = @$_COOKIE['pickupStoreVal'];
-            $collection = $this->_storeCollection->getCollection()->addFieldToFilter('store_id', $id);
-        }else{
-            $id = $quote->getPickupStore();
-            $collection = $this->_storeCollection->getCollection()->addFieldToFilter('store_id', $id);
-        }
-        if($collection){
-            foreach ($collection->getData() as $stores){
-                $store = $stores;
+        if($quote->getPickupDate()!='0000-00-00 00:00:00' && $quote->getPickupStore()!="") {
+            $order->setPickupDate($quote->getPickupDate());
+            $order->setPickupStore($quote->getPickupStore());
+            $this->log("Pickup Date".$quote->getPickupDate());
+            $this->log("Pickup Store".$quote->getPickupStore());
+            $collection = '';
+            $store = '';
+            if (@$_COOKIE['pickupStoreVal']){
+                $id = @$_COOKIE['pickupStoreVal'];
+                $collection = $this->_storeCollection->getCollection()->addFieldToFilter('store_id', $id);
+            }else{
+                $id = $quote->getPickupStore();
+                $collection = $this->_storeCollection->getCollection()->addFieldToFilter('store_id', $id);
             }
-            if ($order->getShippingMethod() == "storepickup_storepickup"){
-                $storeName = explode(' ', $store['sname']);
-                $streetAddress = array($store['address']);
-                $firstName = '';
-                $lastName = '';
-
-                if (count($storeName) == 1)
-                {
-                    $firstName = "Store";
-                    $lastName = $storeName[0];
+            if($collection){
+                foreach ($collection->getData() as $stores){
+                    $store = $stores;
                 }
-                elseif (count($storeName) > 2)
-                {
-                    $firstName = $storeName[0];
-                    for ($i=1; $i < count($storeName); $i++)
+                if ($order->getShippingMethod() == "storepickup_storepickup"){
+                    $storeName = explode(' ', $store['sname']);
+                    $streetAddress = array($store['address']);
+                    $firstName = '';
+                    $lastName = '';
+
+                    if (count($storeName) == 1)
                     {
-                        $lastName = $lastName." ".$storeName[$i];
+                        $firstName = "Store";
+                        $lastName = $storeName[0];
                     }
+                    elseif (count($storeName) > 2)
+                    {
+                        $firstName = $storeName[0];
+                        for ($i=1; $i < count($storeName); $i++)
+                        {
+                            $lastName = $lastName." ".$storeName[$i];
+                        }
+                    }
+                    else{
+                        $firstName = $storeName[0];
+                        $lastName = $storeName[1];
+                    }
+                    $order->getShippingAddress()->setFirstname($firstName);
+                    $order->getShippingAddress()->setLastname($lastName);
+                    $order->getShippingAddress()->setStreet($streetAddress);
+                    $order->getShippingAddress()->setCity($store['city']);
+                    $order->getShippingAddress()->setPostcode(trim($store['postcode']));
+                    $order->getShippingAddress()->setRegion(trim($store['region']));
+                    $order->getShippingAddress()->setCountryId(strtoupper(trim($store['country'])));
+                    $order->getShippingAddress()->setTelephone(trim($store['phone']));
+                    $order->getShippingAddress()->setCompany('');
                 }
-                else{
-                    $firstName = $storeName[0];
-                    $lastName = $storeName[1];
-                }
-                $order->getShippingAddress()->setFirstname($firstName);
-                $order->getShippingAddress()->setLastname($lastName);
-                $order->getShippingAddress()->setStreet($streetAddress);
-                $order->getShippingAddress()->setCity($store['city']);
-                $order->getShippingAddress()->setPostcode(trim($store['postcode']));
-                $order->getShippingAddress()->setRegion(trim($store['region']));
-                $order->getShippingAddress()->setCountryId(strtoupper(trim($store['country'])));
-                $order->getShippingAddress()->setTelephone(trim($store['phone']));
-                $order->getShippingAddress()->setCompany('');
             }
         }
-
         return $this;
     }
     public function getStoreId(){

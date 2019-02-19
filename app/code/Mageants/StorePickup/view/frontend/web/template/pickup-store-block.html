@@ -6,15 +6,16 @@
  * @author Mageants Team <support@mageants.com>
  */
 -->
-<div id="store-pickup-additional-block" data-bind="attr: { style:enabled }">
-	<label class="label">Pick Up Location</label>
-	<div class="control">
-		<select name="pickup_store" id="pickup_store" data-bind="event: {change:function(){updateDeliverydate($parent);}},options: stores, optionsText: 'name', optionsValue: 'id', optionsCaption: 'Select Store ...'"></select>
+<form id="store-pickup-form" class="form store-pickup-form" data-role="store-pickup-form">
+	<div id="store-pickup-additional-block" data-bind="attr: { style:enabled }">
+		<label class="label">Pick Up Location</label>
+		<div class="control">
+			<select name="pickup_store" id="pickup_store" data-validate="{required:true}" data-bind="event: {change:function(){updateDeliverydate($parent);}},options: stores, optionsText: 'name', optionsValue: 'id', optionsCaption: 'Select Store ...'"></select>
+		</div>
+		<label class="label">Pick Up Date</label>
+		<div class="control">
+			<input class="input-text" type="text" data-validate="{required:true}" data-bind="datetimepicker: true,event: {change:function(){updateDeliverydate($parent);}},attr: {value:getDatePickerValue($parent)}" name="pickup_date" id="pickup_date" readonly="true"/>
+		</div>
 	</div>
-	<label class="label">Pick Up Date</label>
-	<div class="control">
-		<input class="input-text" type="text" data-bind="datetimepicker: true,event: {change:function(){updateDeliverydate($parent);}},attr: {value:getDatePickerValue($parent)}" name="pickup_date" id="pickup_date" readonly="true"/>
-	</div>
-</div>
-<br/>
-
+	<br/>
+</form>

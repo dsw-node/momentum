@@ -41,7 +41,7 @@ define(
                 $("#pickup_store").val(pickup_store);
             }
             var deliverydate=window.checkoutConfig.shipping.store_pickup.pickup_date;
-            if (typeof(deliverydate) != 'undefined' && deliverydate != null){
+            if (typeof(deliverydate) != 'undefined' && deliverydate != null  && deliverydate !="0000-00-00" && deliverydate!="0000-00-00 00:00:00"){
                var ret = deliverydate.split(" ");
                var deliverydate = ret[0];
                return deliverydate;
@@ -133,8 +133,5 @@ define(
         }
         }
     );
-        $("input.shipping_type").change(function () {
-            console.log("method changedddddd");
-        });
     }
 );
