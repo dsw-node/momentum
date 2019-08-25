@@ -74,7 +74,7 @@ $_item = $block->getItem();
     <td class="col delivery-date" data-th="<?= $block->escapeHtml(__('Delivery Date')) ?>">
         <?php
             $date=date_create($_item->getDeliverydate());
-            echo date_format($date,"d-m-Y");
+            echo date_format($date,"m-d-Y");
         ?>
     </td>
     <td class="col subtotal" data-th="<?= $block->escapeHtml(__('Subtotal')) ?>">
